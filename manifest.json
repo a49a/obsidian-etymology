@@ -1,10 +1,11 @@
 {
     "id": "etymology-lookup",
-    "name": "Etymology Lookup (Etymonline)",
+    "name": "Etymology Lookup",
     "version": "1.0.0",
     "minAppVersion": "0.15.0",
-    "description": "选中单词或短语后，自动在 Etymonline.com (中文页面) 查找其词源。",
-    "author": "Your Name Here",
-    "authorUrl": "https://yourwebsite.com",
+    "description": "Automatically look up the etymology of selected words or phrases",
+    "author": "LN Wang",
+    "authorUrl": "",
+    "fundingUrl": "",
     "isDesktopOnly": true
 }

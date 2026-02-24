@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "obsidian-english-radix",
 	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "This is a sample plugin for seek etymology ",
 	"main": "main.js",
 	"type": "module",
 	"scripts": {

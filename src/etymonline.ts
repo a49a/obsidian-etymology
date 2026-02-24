@@ -39,7 +39,7 @@ function extractDefinitions(doc: Document): string[] {
 }
 
 export async function fetchEtymology(term: string): Promise<EtymologyResult> {
-	const url = `https://www.etymonline.com/cn/word/${encodeURIComponent(term)}`;
+	const url = `https://www.etymonline.com/word/${encodeURIComponent(term)}`;
 	const response = await requestUrl({
 		url,
 		headers: {
