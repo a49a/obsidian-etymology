@@ -39,12 +39,6 @@ export default class EtymologyLookupPlugin extends Plugin {
                 this.addLookupMenuItem(menu, () => editor.getSelection().trim());
             })
         );
-
-        this.registerEvent(
-            this.app.workspace.on("markdown-preview-menu", (menu: Menu) => {
-                this.addLookupMenuItem(menu, () => window.getSelection()?.toString().trim() ?? "");
-            })
-        );
     }
 
     onunload() {
