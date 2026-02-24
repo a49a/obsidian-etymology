@@ -1,4 +1,4 @@
-# Etymology Lookup (Etymonline) | 词源查询插件
+# Etymology Fetch | 词源查询插件
 
 [English](#english) | [中文](#chinese)
 
@@ -8,7 +8,7 @@
 
 ### Overview
 
-**Etymology Lookup** is an Obsidian community plugin that helps you explore the origins and history of English words directly within your notes. Simply select a word or phrase in Obsidian, and the plugin instantly fetches its etymology data from [Etymonline.com](https://www.etymonline.com), displaying comprehensive information about the word's linguistic roots.
+**Etymology Fetch** is an Obsidian community plugin that helps you explore the origins and history of English words directly within your notes. Simply select a word or phrase in Obsidian, and the plugin instantly fetches its etymology data from [Etymonline.com](https://www.etymonline.com), displaying comprehensive information about the word's linguistic roots.
 
 ### Features
 
@@ -34,14 +34,14 @@
 
 #### Option 1: Community Plugin (Recommended)
 1. Open Obsidian → **Settings** → **Community plugins**
-2. Click **Browse** and search for "Etymology Lookup"
+2. Click **Browse** and search for "Etymology Fetch"
 3. Click **Install** and then **Enable**
 
 #### Option 2: Manual Installation
 1. Download the latest release from [GitHub Releases](https://github.com/yourusername/obsi-enradar/releases)
-2. Extract the files into: `.obsidian/plugins/etymology-lookup/`
+2. Extract the files into: `.obsidian/plugins/etymology-fetch/`
 3. Reload Obsidian
-4. Go to **Settings** → **Community plugins** and enable "Etymology Lookup"
+4. Go to **Settings** → **Community plugins** and enable "Etymology Fetch"
 
 ### Usage
 
@@ -141,7 +141,7 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 
 ### 概述
 
-**词源查询插件（Etymology Lookup）** 是一款 Obsidian 社区插件，帮助你直接在笔记中探索英文单词的来源和历史。只需在 Obsidian 中选中一个单词或短语，插件就能立即从 [Etymonline.com](https://www.etymonline.com) 获取词源数据，并显示该单词的语言起源和演变历史。
+**词源查询插件（Etymology Fetch）** 是一款 Obsidian 社区插件，帮助你直接在笔记中探索英文单词的来源和历史。只需在 Obsidian 中选中一个单词或短语，插件就能立即从 [Etymonline.com](https://www.etymonline.com) 获取词源数据，并显示该单词的语言起源和演变历史。
 
 ### 功能特性
 
@@ -167,14 +167,14 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 
 #### 方法一：官方社区插件（推荐）
 1. 打开 Obsidian → **设置** → **第三方插件**
-2. 点击**浏览**，搜索"Etymology Lookup"
+2. 点击**浏览**，搜索"Etymology Fetch"
 3. 点击**安装**，然后**启用**
 
 #### 方法二：手动安装
 1. 从 [GitHub 发布页面](https://github.com/yourusername/obsi-enradar/releases) 下载最新版本
-2. 解压文件到：`.obsidian/plugins/etymology-lookup/`
+2. 解压文件到：`.obsidian/plugins/etymology-fetch/`
 3. 重新加载 Obsidian
-4. 转到**设置** → **第三方插件**，启用"Etymology Lookup"
+4. 转到**设置** → **第三方插件**，启用"Etymology Fetch"
 
 ### 使用方法
 

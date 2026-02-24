@@ -1,5 +1,5 @@
 {
-	"name": "obsidian-english-radix",
+	"name": "obsidian-etymology",
 	"version": "1.0.0",
 	"description": "This is a sample plugin for seek etymology ",
 	"main": "main.js",
