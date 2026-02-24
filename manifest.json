@@ -3,7 +3,7 @@
     "name": "Etymology Fetch",
     "version": "1.0.0",
     "minAppVersion": "0.15.0",
-    "description": "Automatically look up the etymology of selected words or phrases",
+    "description": "Automatically look up the etymology of selected words or phrases.",
     "author": "LN Wang",
     "authorUrl": "",
     "fundingUrl": "",
