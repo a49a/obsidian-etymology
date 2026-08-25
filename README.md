@@ -1,269 +1,287 @@
-# Etymology Fetch | 词源查询插件
+# Etymology Fetch
 
-[English](#english) | [中文](#chinese)
+[English](#english) | [中文](#中文)
 
 ---
 
-## <a name="english"></a>English
+## English
 
-### Overview
+Etymology Fetch is an Obsidian plugin that helps you:
 
-**Etymology Fetch** is an Obsidian community plugin that helps you explore the origins and history of English words directly within your notes. Simply select a word or phrase in Obsidian, and the plugin instantly fetches its etymology data from [Etymonline.com](https://www.etymonline.com), displaying comprehensive information about the word's linguistic roots.
+- look up the etymology of selected words or phrases from Etymonline
+- send selected text to AI models (DeepSeek/OpenAI/Claude/Gemini/custom)
+- save the generated result as a Markdown note in your vault
 
 ### Features
 
-✨ **Quick Word Lookup**
-- Select any word or phrase and look up its etymology instantly
-- Access via command palette or right-click context menu
+#### 1) Etymonline lookup
 
-📖 **Rich Etymology Data**
-- Fetch comprehensive etymology information from Etymonline.com
-- View word definitions and linguistic history
-- Understand the origins and evolution of English words
+- Select a word or phrase and fetch its etymology from [Etymonline](https://www.etymonline.com/).
+- Show parsed results in an Obsidian modal.
+- Provide a link to the original Etymonline page.
 
-⚡ **Seamless Integration**
-- Works in both editing mode and preview mode
-- Non-intrusive modal interface for viewing results
-- One-click access to the full entry on Etymonline.com
+#### 2) AI note generation
 
-🖥️ **Desktop Focus**
-- Optimized for desktop use
-- Efficient network requests with proper error handling
+- Send selected text to your selected AI provider.
+- Edit your own prompt template in plugin settings.
+- Use `{{word}}` or `{{selectedText}}` in the template.
+- Save model output as a Markdown file in your vault.
+- Auto-create output folder if it does not exist.
+- File name uses the selected text (sanitized for file safety), for example `etymology.md`.
+- If the file already exists, append a numeric suffix like `etymology-1.md` to avoid overwrite.
 
-### Installation
+### Commands
 
-#### Option 1: Community Plugin (Recommended)
-1. Open Obsidian → **Settings** → **Community plugins**
-2. Click **Browse** and search for "Etymology Fetch"
-3. Click **Install** and then **Enable**
+- `查找选中单词的词源 (Etymonline)`
+- `发送选中文本到 AI 并生成文件`
 
-#### Option 2: Manual Installation
-1. Download the latest release from [GitHub Releases](https://github.com/yourusername/obsi-enradar/releases)
-2. Extract the files into: `.obsidian/plugins/etymology-fetch/`
-3. Reload Obsidian
-4. Go to **Settings** → **Community plugins** and enable "Etymology Fetch"
+Both commands are available in Command Palette and editor context menu.
+
+### AI settings
+
+Open Obsidian Settings -> Community plugins -> Etymology Fetch.
+
+| Setting | Description | Default |
+| --- | --- | --- |
+| Language | `Auto`, `Chinese`, `English` for plugin UI text. | `Auto` |
+| Model provider | `DeepSeek`, `OpenAI`, `Anthropic (Claude)`, `Google Gemini`, `Custom (OpenAI-compatible)` | `DeepSeek` |
+| API Key | Required to call selected provider API. | empty |
+| Base URL | API endpoint base URL. | provider-specific default |
+| Model | Model name. | provider-specific default |
+| Prompt template | Supports `{{word}}` and `{{selectedText}}`. | built-in vocabulary template |
+| Output directory | By default relative to vault root. If path starts with `./` or `../`, it is relative to the current note folder. | `deepseek-results` |
+
+Prompt example:
+
+```text
+Please generate a Markdown vocabulary note for the following word, including meaning, roots/affixes, example sentences, and memory tips.
+
+Word: {{word}}
+```
+
+### Install for local testing
+
+1. Build the plugin in this project:
+
+```bash
+npm install
+npm run build
+```
+
+After build, release files are prepared in:
+
+```text
+dist/
+```
+
+You can also choose a custom output directory (relative or absolute):
+
+```bash
+# Relative path (from project root)
+RELEASE_OUTPUT_DIR=release-files npm run build
+
+# Absolute path
+RELEASE_OUTPUT_DIR=/Users/yourname/Desktop/obsidian-release npm run build
+```
+
+1. Copy these files from `dist/` into your vault plugin folder:
+
+```text
+<Vault>/.obsidian/plugins/etymology-fetch/
+```
+
+Required files:
+
+- `main.js`
+- `manifest.json`
+- `styles.css`
+
+1. In Obsidian, enable it from Settings -> Community plugins.
 
 ### Usage
 
-#### Method 1: Command Palette
-1. Select a word or phrase in your note
-2. Open the command palette (**Cmd+P** on Mac, **Ctrl+P** on Windows/Linux)
-3. Search for "Look up etymology" and press Enter
-4. The etymology details will appear in a modal window
+#### Etymonline lookup
 
-#### Method 2: Right-Click Context Menu
-1. Select a word or phrase in your note (works in both edit and preview mode)
-2. Right-click to open the context menu
-3. Select "Look up etymology (Etymonline)"
-4. View the detailed etymology information
+1. Select a word or phrase in a note.
+2. Run `查找选中单词的词源 (Etymonline)`.
+3. Read results in the modal.
 
-#### Method 3: Editor Menu
-1. While editing, place your cursor or select text
-2. Access the editor menu and select the etymology lookup option
-3. Instantly fetch and display the word's etymology
+#### AI file generation
 
-### How It Works
+1. Configure provider and API Key first.
+2. Select a word or phrase.
+3. Run `发送选中文本到 AI 并生成文件`.
+4. Check the generated file in your configured output directory.
 
-1. **Selection**: Select any English word or phrase in your Obsidian vault
-2. **Query**: The plugin sends a request to Etymonline.com
-3. **Parsing**: Etymology and definition data is extracted from the response
-4. **Display**: Results are shown in a clean modal window
-5. **Link**: A direct link is provided for exploring more on Etymonline.com
+Generated note includes:
 
-### Features Explained
-
-**Automatic Definition Extraction**
-- The plugin intelligently extracts definitions and etymology information
-- Handles multiple page layouts and formats from Etymonline.com
-- Falls back gracefully if specific sections aren't found
-
-**Error Handling**
-- Clear notifications if a word is not found or the lookup fails
-- User-friendly error messages guide you on what to do next
-
-**Performance**
-- Lightweight plugin with minimal memory footprint
-- Efficient network requests
-- Quick response times for word lookups
-
-### Requirements
-
-- **Obsidian**: Version 0.15.0 or higher
-- **Internet Connection**: Required to fetch data from Etymonline.com
-- **Desktop**: Currently desktop-only (Windows, macOS, Linux)
-
-### Troubleshooting
-
-**Plugin doesn't load**
-- Make sure it's enabled in Settings → Community plugins
-- Restart Obsidian if needed
-- Check that your plugin folder contains `main.js` and `manifest.json`
-
-**Word lookup fails**
-- Ensure you have an active internet connection
-- Etymonline.com must be accessible from your network
-- Try a different word or check the word's spelling
-- The word might not exist in Etymonline's database
-
-**No results displayed**
-- Some less common words may not have entries on Etymonline.com
-- Try searching with the singular form or root word
-- Check if the word is in the English language
+- selected text as title
+- prompt sent to the model
+- AI response
 
 ### Development
 
-This plugin is built with:
-- **TypeScript**: For type-safe code
-- **Obsidian API**: Official plugin development framework
-- **esbuild**: For efficient bundling
+- Node.js 18+ recommended
+- Build command:
 
-To contribute or develop locally:
 ```bash
-git clone https://github.com/yourusername/obsi-enradar.git
-cd obsi-enradar
-npm install
+npm run build
+```
+
+- Watch mode:
+
+```bash
 npm run dev
 ```
+
+### Privacy and network
+
+- Etymonline lookup sends selected text to Etymonline.
+- AI generation sends selected text and rendered prompt to your configured provider endpoint.
+- Generated output is saved only in your current vault.
 
 ### License
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
-
-### Acknowledgments
-
-- Built for [Obsidian](https://obsidian.md)
-- Etymology data provided by [Etymonline.com](https://www.etymonline.com)
-- Inspired by the Obsidian community's passion for knowledge
+See `LICENSE`.
 
 ---
 
-## <a name="chinese"></a>中文
+## 中文
 
-### 概述
+Etymology Fetch 是一个 Obsidian 插件，支持：
 
-**词源查询插件（Etymology Fetch）** 是一款 Obsidian 社区插件，帮助你直接在笔记中探索英文单词的来源和历史。只需在 Obsidian 中选中一个单词或短语，插件就能立即从 [Etymonline.com](https://www.etymonline.com) 获取词源数据，并显示该单词的语言起源和演变历史。
+- 查询选中文本在 Etymonline 的词源信息
+- 将选中的单词或短语发送给 AI 模型（DeepSeek/OpenAI/Claude/Gemini/自定义）
+- 将生成结果保存为 Vault 内的 Markdown 文件
 
-### 功能特性
+### 功能
 
-✨ **快速单词查询**
-- 选中任何单词或短语，检索其词源
-- 支持命令面板和右键菜单访问
+#### 1）Etymonline 词源查询
 
-📖 **丰富的词源信息**
-- 从 Etymonline.com 获取全面的词源信息
-- 查看单词定义和语言历史
-- 理解英文单词的来源和演变过程
+- 选中单词或短语后，从 [Etymonline](https://www.etymonline.com/) 获取词源。
+- 在 Obsidian 弹窗中展示解析结果。
+- 可跳转到 Etymonline 原始页面。
 
-⚡ **无缝集成**
-- 在编辑模式和预览模式下均可使用
-- 简洁的模态框界面显示结果
-- 一键访问 Etymonline.com 上的完整词条
+#### 2）AI 生成学习笔记
 
-🖥️ **桌面优化**
-- 针对桌面使用进行了优化
-- 支持高效的网络请求和错误处理
+- 将选中文本发送到你选择的 AI 提供商 API。
+- 在插件设置中自定义 Prompt 模板。
+- 模板支持 `{{word}}` 或 `{{selectedText}}` 变量。
+- 将模型返回内容写入 Vault 内 Markdown 文件。
+- 输出目录不存在时自动创建。
+- 文件名默认使用选中文本（会做文件名安全处理），例如 `etymology.md`。
+- 如果同名文件已存在，会自动追加序号，如 `etymology-1.md`，避免覆盖。
 
-### 安装方法
+### 命令
 
-#### 方法一：官方社区插件（推荐）
-1. 打开 Obsidian → **设置** → **第三方插件**
-2. 点击**浏览**，搜索"Etymology Fetch"
-3. 点击**安装**，然后**启用**
+- `查找选中单词的词源 (Etymonline)`
+- `发送选中文本到 AI 并生成文件`
 
-#### 方法二：手动安装
-1. 从 [GitHub 发布页面](https://github.com/yourusername/obsi-enradar/releases) 下载最新版本
-2. 解压文件到：`.obsidian/plugins/etymology-fetch/`
-3. 重新加载 Obsidian
-4. 转到**设置** → **第三方插件**，启用"Etymology Fetch"
+以上命令都支持命令面板和编辑器右键菜单。
 
-### 使用方法
+### AI 设置
 
-#### 方法一：命令面板
-1. 在笔记中选中一个单词或短语
-2. 打开命令面板（Mac 上为 **Cmd+P**，Windows/Linux 上为 **Ctrl+P**）
-3. 搜索"查找选中单词的词源"并按 Enter
-4. 词源详情将在模态框中显示
+在 Obsidian 中打开：设置 -> 第三方插件 -> Etymology Fetch。
 
-#### 方法二：右键菜单
-1. 在笔记中选中一个单词或短语（在编辑和预览模式下都可用）
-2. 右键打开上下文菜单
-3. 选择"查找选中单词的词源 (Etymonline)"
-4. 查看详细的词源信息
+| 设置项 | 说明 | 默认值 |
+| --- | --- | --- |
+| 界面语言 | `自动`、`中文`、`English`，用于插件界面文本。 | `自动` |
+| 模型提供商 | `DeepSeek`、`OpenAI`、`Anthropic (Claude)`、`Google Gemini`、`自定义（OpenAI 兼容）` | `DeepSeek` |
+| API Key | 调用所选提供商 API 必填。 | 空 |
+| Base URL | API 基础地址。 | 按提供商默认值 |
+| 模型名 | 使用的模型名称。 | 按提供商默认值 |
+| Prompt 模板 | 支持 `{{word}}` 和 `{{selectedText}}`。 | 内置单词学习模板 |
+| 输出目录 | 默认相对 Vault 根目录；如果以 `./` 或 `../` 开头，则相对当前笔记所在目录。 | `deepseek-results` |
 
-#### 方法三：编辑菜单
-1. 在编辑时，将光标放在单词上或选中文本
-2. 访问编辑菜单并选择词源查询选项
-3. 立即获取并显示该单词的词源
+Prompt 示例：
 
-### 工作原理
+```text
+请根据下面的单词生成学习笔记，输出 Markdown 格式，包含词义、词根词缀、例句和记忆建议。
 
-1. **选择**：在 Obsidian 库中选中任何英文单词或短语
-2. **查询**：插件向 Etymonline.com 发送请求
-3. **解析**：从响应中提取词源和定义数据
-4. **显示**：以简洁的模态框形式显示结果
-5. **链接**：提供直接链接，用于在 Etymonline.com 上进行更多探索
+单词：{{word}}
+```
 
-### 功能说明
+### 本地测试安装
 
-**自动定义提取**
-- 插件智能地提取定义和词源信息
-- 处理来自 Etymonline.com 的多种页面布局和格式
-- 当找不到特定部分时，优雅地回退
+1. 在项目中构建插件：
 
-**错误处理**
-- 如果单词未找到或查找失败，会显示清晰的通知
-- 用户友好的错误消息指导你下一步该做什么
+```bash
+npm install
+npm run build
+```
 
-**性能优化**
-- 轻量级插件，内存占用最少
-- 高效的网络请求
-- 单词查询响应速度快
+构建后，发布文件会自动整理到：
 
-### 系统要求
+```text
+dist/
+```
 
-- **Obsidian**：版本 0.15.0 或更高
-- **网络连接**：需要网络连接才能从 Etymonline.com 获取数据
-- **系统**：目前仅支持桌面（Windows、macOS、Linux）
+也可以自定义输出目录（支持相对路径和绝对路径）：
 
-### 常见问题排查
+```bash
+# 相对路径（相对于项目根目录）
+RELEASE_OUTPUT_DIR=release-files npm run build
 
-**插件无法加载**
-- 确保在**设置** → **第三方插件**中已启用
-- 如需要，重启 Obsidian
-- 检查插件文件夹中是否包含 `main.js` 和 `manifest.json`
+# 绝对路径
+RELEASE_OUTPUT_DIR=/Users/yourname/Desktop/obsidian-release npm run build
+```
 
-**单词查询失败**
-- 确保你有活跃的网络连接
-- Etymonline.com 必须可以从你的网络访问
-- 尝试查询不同的单词或检查拼写
-- 该单词可能不在 Etymonline 的数据库中
+1. 从 `dist/` 将以下文件复制到 Vault 插件目录：
 
-**没有显示结果**
-- 某些不常见的单词在 Etymonline.com 上可能没有词条
-- 尝试用单数形式或词根进行搜索
-- 确认该单词是英文单词
+```text
+<Vault>/.obsidian/plugins/etymology-fetch/
+```
+
+至少包含：
+
+- `main.js`
+- `manifest.json`
+- `styles.css`
+
+1. 在 Obsidian 的 设置 -> 第三方插件 中启用插件。
+
+### 使用方式
+
+#### 词源查询
+
+1. 在笔记中选中单词或短语。
+2. 执行 `查找选中单词的词源 (Etymonline)`。
+3. 在弹窗中查看结果。
+
+#### AI 生成文件
+
+1. 先配置模型提供商和 API Key。
+2. 选中单词或短语。
+3. 执行 `发送选中文本到 AI 并生成文件`。
+4. 在你配置的输出目录中查看生成的 Markdown 文件。
+
+生成文件内容包括：
+
+- 选中文本标题
+- 实际发送的 Prompt
+- AI 返回内容
 
 ### 开发
 
-该插件使用以下技术栈构建：
-- **TypeScript**：提供类型安全的代码
-- **Obsidian API**：官方插件开发框架
-- **esbuild**：高效的打包工具
+- 建议 Node.js 18+
+- 构建：
 
-本地开发或贡献：
 ```bash
-git clone https://github.com/yourusername/obsi-enradar.git
-cd obsi-enradar
-npm install
+npm run build
+```
+
+- 开发监听：
+
+```bash
 npm run dev
 ```
 
+### 隐私与网络
+
+- 词源查询会将选中文本发送到 Etymonline。
+- AI 生成会将选中文本和渲染后的 Prompt 发送到你配置的模型提供商接口地址。
+- 生成结果仅写入当前 Vault。
+
 ### 许可证
 
-本项目采用 MIT 许可证。详见 [LICENSE](LICENSE)。
-
-### 致谢
-
-- 为 [Obsidian](https://obsidian.md) 构建
-- 词源数据来自 [Etymonline.com](https://www.etymonline.com)
-- 受 Obsidian 社区对知识的热情启发
+详见 `LICENSE`。

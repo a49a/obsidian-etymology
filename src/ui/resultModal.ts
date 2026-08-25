@@ -1,12 +1,15 @@
 import { App, Modal } from "obsidian";
 import type { EtymologyResult } from "../etymonline";
+import { t, type ResolvedLanguage } from "../i18n";
 
 export class EtymologyResultModal extends Modal {
 	private readonly result: EtymologyResult;
+	private readonly language: ResolvedLanguage;
 
-	constructor(app: App, result: EtymologyResult) {
+	constructor(app: App, result: EtymologyResult, language: ResolvedLanguage) {
 		super(app);
 		this.result = result;
+		this.language = language;
 	}
 
 	onOpen(): void {
@@ -19,7 +22,7 @@ export class EtymologyResultModal extends Modal {
 		});
 
 		const link = contentEl.createEl("a", {
-			text: "查看原始页面",
+			text: t(this.language, "resultViewSource"),
 			href: this.result.url,
 		});
 		link.setAttr("target", "_blank");
@@ -27,7 +30,7 @@ export class EtymologyResultModal extends Modal {
 
 		if (this.result.definitions.length === 0) {
 			contentEl.createEl("p", {
-				text: "未能解析到词源内容，请查看原始页面。",
+				text: t(this.language, "resultEmpty"),
 				cls: "etymology-empty",
 			});
 			return;
