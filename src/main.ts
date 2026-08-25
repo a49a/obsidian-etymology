@@ -1,5 +1,14 @@
 // main.js
-import { normalizePath, Plugin, Notice, Menu, TFolder, type Editor } from "obsidian";
+import {
+    normalizePath,
+    Plugin,
+    Notice,
+    Menu,
+    TFile,
+    TFolder,
+    type Editor,
+    type EditorPosition,
+} from "obsidian";
 import { generateWithAI } from "./deepseek";
 import { fetchEtymology } from "./etymonline";
 import { resolveLanguage, t } from "./i18n";
@@ -7,8 +16,24 @@ import { buildDeepSeekPrompt, DEFAULT_SETTINGS, EtymologyPluginSettings } from "
 import { EtymologyResultModal } from "./ui/resultModal";
 import { EtymologySettingTab } from "./ui/settingsTab";
 
+interface SelectionSnapshot {
+    from: EditorPosition;
+    to: EditorPosition;
+    selectedText: string;
+}
+
+type TriggerSource = "command" | "menu";
+
+interface LastGenerationRecord {
+    key: string;
+    filePath: string;
+    createdAt: number;
+}
+
 export default class EtymologyLookupPlugin extends Plugin {
     settings!: EtymologyPluginSettings;
+    private isAiGenerating = false;
+    private lastGeneration?: LastGenerationRecord;
 
     async onload() {
         console.log('加载 Etymology Lookup Plugin');
@@ -48,11 +73,14 @@ export default class EtymologyLookupPlugin extends Plugin {
             id: "generate-deepseek-note",
             name: t(language, "aiCommandName"),
             editorCallback: async (editor) => {
-                const selectedText = editor.getSelection().trim();
+                const selectionSnapshot = this.captureSelectionSnapshot(editor);
+                const selectedText = selectionSnapshot?.selectedText ?? "";
                 await this.handleDeepSeekForSelection(
                     selectedText,
                     this.app.workspace.getActiveFile()?.path,
-                    editor
+                    editor,
+                    selectionSnapshot,
+                    "command"
                 );
             },
         });
@@ -99,11 +127,14 @@ export default class EtymologyLookupPlugin extends Plugin {
                 .setTitle(t(this.getLanguage(), "aiMenuName"))
                 .setIcon("sparkles")
                 .onClick(async () => {
-                    const selectedText = getSelection();
+                    const selectionSnapshot = this.captureSelectionSnapshot(editor);
+                    const selectedText = selectionSnapshot?.selectedText ?? getSelection();
                     await this.handleDeepSeekForSelection(
                         selectedText,
                         this.app.workspace.getActiveFile()?.path,
-                        editor
+                        editor,
+                        selectionSnapshot,
+                        "menu"
                     );
                 });
         });
@@ -112,17 +143,34 @@ export default class EtymologyLookupPlugin extends Plugin {
     private async handleDeepSeekForSelection(
         selectedText: string,
         sourceFilePath?: string,
-        editor?: Editor
+        editor?: Editor,
+        selectionSnapshot?: SelectionSnapshot,
+        triggerSource: TriggerSource = "command"
     ): Promise<void> {
+        this.debugLog("AI command triggered", {
+            triggerSource,
+            sourceFilePath: sourceFilePath ?? "",
+            selectedTextLength: selectedText.length,
+        });
+
+        if (this.isAiGenerating) {
+            this.debugLog("Skipped because generation is already running", { triggerSource });
+            new Notice(t(this.getLanguage(), "noticeAiAlreadyRunning"));
+            return;
+        }
+
         if (!selectedText) {
             new Notice(t(this.getLanguage(), "noticeSelectTextForAi"));
             return;
         }
 
         if (!this.settings.deepseekApiKey) {
+            this.debugLog("Skipped because API key is empty", { triggerSource });
             new Notice(t(this.getLanguage(), "noticeMissingApiKey"));
             return;
         }
+
+        this.isAiGenerating = true;
 
         try {
             new Notice(t(this.getLanguage(), "noticeAiInProgress", { text: selectedText }));
@@ -139,36 +187,98 @@ export default class EtymologyLookupPlugin extends Plugin {
                 model: this.settings.deepseekModel,
                 prompt,
             });
+            this.debugLog("AI response received", {
+                triggerSource,
+                provider: this.settings.modelProvider,
+                generatedTextLength: generatedText.length,
+            });
+
+            const generationKey = `${sourceFilePath ?? ""}|${selectedText}|${generatedText}`;
+            const now = Date.now();
+            if (
+                this.lastGeneration &&
+                this.lastGeneration.key === generationKey &&
+                now - this.lastGeneration.createdAt < 15_000
+            ) {
+                this.debugLog("Dedup hit; reused existing file", {
+                    triggerSource,
+                    filePath: this.lastGeneration.filePath,
+                });
+                new Notice(t(this.getLanguage(), "noticeAiSaved", { path: this.lastGeneration.filePath }));
+                return;
+            }
 
             const outputFilePath = await this.writeDeepSeekResult(selectedText, prompt, generatedText, sourceFilePath);
-            this.wrapCurrentSelectionWithWikiLink(editor, selectedText);
+            this.debugLog("Created AI result file", { triggerSource, outputFilePath });
+            this.lastGeneration = {
+                key: generationKey,
+                filePath: outputFilePath,
+                createdAt: now,
+            };
+            this.wrapSelectionWithWikiLink(editor, selectionSnapshot, selectedText);
             new Notice(t(this.getLanguage(), "noticeAiSaved", { path: outputFilePath }));
         } catch (error) {
             console.error("AI generation failed", error);
+            this.debugLog("AI generation failed", {
+                triggerSource,
+                errorMessage: error instanceof Error ? error.message : String(error),
+            });
             new Notice(t(this.getLanguage(), "noticeAiFailed"));
+        } finally {
+            this.isAiGenerating = false;
         }
     }
 
-    private wrapCurrentSelectionWithWikiLink(editor: Editor | undefined, selectedText: string): void {
-        if (!editor) {
-            return;
-        }
-
+    private captureSelectionSnapshot(editor: Editor): SelectionSnapshot | undefined {
         const currentSelection = editor.getSelection();
-        if (!currentSelection) {
+        const trimmedSelection = currentSelection.trim();
+
+        if (!trimmedSelection) {
+            return undefined;
+        }
+
+        return {
+            from: editor.getCursor("from"),
+            to: editor.getCursor("to"),
+            selectedText: trimmedSelection,
+        };
+    }
+
+    private wrapSelectionWithWikiLink(
+        editor: Editor | undefined,
+        selectionSnapshot: SelectionSnapshot | undefined,
+        selectedText: string
+    ): void {
+        if (!editor || !selectionSnapshot) {
+            this.debugLog("Skip wikilink wrap because editor or selection snapshot is missing");
             return;
         }
 
-        const trimmedSelection = currentSelection.trim();
+        const originalRangeText = editor.getRange(selectionSnapshot.from, selectionSnapshot.to);
+        if (!originalRangeText) {
+            this.debugLog("Skip wikilink wrap because original range is empty");
+            return;
+        }
+
+        const trimmedSelection = originalRangeText.trim();
         if (!trimmedSelection || trimmedSelection !== selectedText) {
+            this.debugLog("Skip wikilink wrap because selection changed", {
+                expected: selectedText,
+                actual: trimmedSelection,
+            });
             return;
         }
 
         if (/^\[\[[^\]]+\]\]$/.test(trimmedSelection)) {
+            this.debugLog("Skip wikilink wrap because text is already linked", { selectedText: trimmedSelection });
             return;
         }
 
-        editor.replaceSelection(`[[${trimmedSelection}]]`);
+        const leadingWhitespace = originalRangeText.match(/^\s*/)?.[0] ?? "";
+        const trailingWhitespace = originalRangeText.match(/\s*$/)?.[0] ?? "";
+        const wrapped = `${leadingWhitespace}[[${trimmedSelection}]]${trailingWhitespace}`;
+        editor.replaceRange(wrapped, selectionSnapshot.from, selectionSnapshot.to);
+        this.debugLog("Applied wikilink wrap", { linkedText: trimmedSelection });
     }
 
     private async writeDeepSeekResult(
@@ -180,8 +290,24 @@ export default class EtymologyLookupPlugin extends Plugin {
         const outputDir = this.resolveOutputDir(this.settings.deepseekOutputDir || "deepseek-results", sourceFilePath);
         await this.ensureFolder(outputDir);
 
-        const filePath = this.getUniqueOutputPath(outputDir, selectedText);
-        const content = [
+        const filePath = this.getBaseOutputPath(outputDir, selectedText);
+        const existing = this.app.vault.getAbstractFileByPath(filePath);
+
+        if (existing instanceof TFile) {
+            const appendedBlock = this.buildAppendBlock(prompt, result);
+            await this.app.vault.append(existing, appendedBlock);
+            this.debugLog("Appended AI result to existing note", { filePath });
+            return filePath;
+        }
+
+        const content = this.buildInitialContent(selectedText, prompt, result);
+        await this.app.vault.create(filePath, content);
+        this.debugLog("Created new AI note", { filePath });
+        return filePath;
+    }
+
+    private buildInitialContent(selectedText: string, prompt: string, result: string): string {
+        return [
             `# ${selectedText}`,
             "",
             t(this.getLanguage(), "markdownPromptHeading"),
@@ -193,9 +319,23 @@ export default class EtymologyLookupPlugin extends Plugin {
             result,
             "",
         ].join("\n");
+    }
 
-        await this.app.vault.create(filePath, content);
-        return filePath;
+    private buildAppendBlock(prompt: string, result: string): string {
+        return [
+            "",
+            "",
+            "---",
+            "",
+            `${t(this.getLanguage(), "markdownResultHeading")} (${new Date().toLocaleString()})`,
+            "",
+            result,
+            "",
+            t(this.getLanguage(), "markdownPromptHeading"),
+            "",
+            prompt,
+            "",
+        ].join("\n");
     }
 
     private resolveOutputDir(configuredDir: string, sourceFilePath?: string): string {
@@ -251,20 +391,12 @@ export default class EtymologyLookupPlugin extends Plugin {
         return stack.join("/");
     }
 
-    private getUniqueOutputPath(outputDir: string, selectedText: string): string {
+    private getBaseOutputPath(outputDir: string, selectedText: string): string {
         const safeWord = selectedText
             .replace(/[\\/:*?"<>|]/g, "-")
             .replace(/\s+/g, "-")
             .slice(0, 40) || "deepseek";
-        let candidatePath = normalizePath(`${outputDir}/${safeWord}.md`);
-        let index = 1;
-
-        while (this.app.vault.getAbstractFileByPath(candidatePath)) {
-            candidatePath = normalizePath(`${outputDir}/${safeWord}-${index}.md`);
-            index += 1;
-        }
-
-        return candidatePath;
+        return normalizePath(`${outputDir}/${safeWord}.md`);
     }
 
     private async ensureFolder(folderPath: string): Promise<void> {
@@ -292,6 +424,19 @@ export default class EtymologyLookupPlugin extends Plugin {
 
     private getLanguage() {
         return resolveLanguage(this.settings.uiLanguage);
+    }
+
+    private debugLog(message: string, details?: Record<string, unknown>): void {
+        if (!this.settings.debugLogging) {
+            return;
+        }
+
+        if (details) {
+            console.log(`[Etymology Fetch][debug] ${message}`, details);
+            return;
+        }
+
+        console.log(`[Etymology Fetch][debug] ${message}`);
     }
 
     async loadSettings(): Promise<void> {

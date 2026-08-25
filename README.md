@@ -61,6 +61,18 @@ Word: {{word}}
 
 ### Install for local testing
 
+Quick deploy (build + copy to vault plugin folder in one command):
+
+```bash
+npm run deploy -- --vault "/path/to/YourVault"
+```
+
+Or deploy directly to a plugin directory:
+
+```bash
+npm run deploy -- --plugin-dir "/path/to/YourVault/.obsidian/plugins/etymology-fetch"
+```
+
 1. Build the plugin in this project:
 
 ```bash
@@ -202,6 +214,18 @@ Prompt 示例：
 ```
 
 ### 本地测试安装
+
+一键部署（构建 + 复制到 Vault 插件目录）：
+
+```bash
+npm run deploy -- --vault "/path/to/YourVault"
+```
+
+或者直接指定插件目录：
+
+```bash
+npm run deploy -- --plugin-dir "/path/to/YourVault/.obsidian/plugins/etymology-fetch"
+```
 
 1. 在项目中构建插件：
 

@@ -16,6 +16,8 @@ type I18nDict = {
 	providerAnthropic: string;
 	providerGemini: string;
 	providerCustom: string;
+	debugLoggingName: string;
+	debugLoggingDesc: string;
 	apiKeyName: string;
 	apiKeyDesc: string;
 	baseUrlName: string;
@@ -36,6 +38,7 @@ type I18nDict = {
 	noticeLookupFailed: string;
 	noticeSelectTextForAi: string;
 	noticeMissingApiKey: string;
+	noticeAiAlreadyRunning: string;
 	noticeAiInProgress: string;
 	noticeAiSaved: string;
 	noticeAiFailed: string;
@@ -63,6 +66,8 @@ const ZH: I18nDict = {
 	providerAnthropic: "Anthropic (Claude)",
 	providerGemini: "Google Gemini",
 	providerCustom: "自定义（OpenAI 兼容）",
+	debugLoggingName: "调试日志",
+	debugLoggingDesc: "开启后在开发者控制台输出详细执行日志，用于排查问题。",
 	apiKeyName: "API Key",
 	apiKeyDesc: "用于调用所选模型提供商 API。",
 	baseUrlName: "Base URL",
@@ -84,6 +89,7 @@ const ZH: I18nDict = {
 	noticeLookupFailed: "词源查询失败，请稍后重试。",
 	noticeSelectTextForAi: "请先选中一个单词或短语再执行 AI 生成。",
 	noticeMissingApiKey: "请先在插件设置中填写 API Key。",
+	noticeAiAlreadyRunning: "AI 生成正在进行中，请稍候。",
 	noticeAiInProgress: "正在将 \"{text}\" 发送到 AI...",
 	noticeAiSaved: "AI 结果已保存: {path}",
 	noticeAiFailed: "AI 生成失败，请检查 API Key、网络、Base URL 或模型设置。",
@@ -112,6 +118,8 @@ const EN: I18nDict = {
 	providerAnthropic: "Anthropic (Claude)",
 	providerGemini: "Google Gemini",
 	providerCustom: "Custom (OpenAI-compatible)",
+	debugLoggingName: "Debug logging",
+	debugLoggingDesc: "When enabled, detailed execution logs are printed to the developer console.",
 	apiKeyName: "API Key",
 	apiKeyDesc: "Required for the selected model provider API.",
 	baseUrlName: "Base URL",
@@ -133,6 +141,7 @@ const EN: I18nDict = {
 	noticeLookupFailed: "Etymology lookup failed. Please try again later.",
 	noticeSelectTextForAi: "Please select a word or phrase before AI generation.",
 	noticeMissingApiKey: "Please set API Key in plugin settings first.",
+	noticeAiAlreadyRunning: "AI generation is already in progress. Please wait.",
 	noticeAiInProgress: "Sending \"{text}\" to AI...",
 	noticeAiSaved: "AI result saved: {path}",
 	noticeAiFailed: "AI generation failed. Check API key, network, Base URL, or model settings.",

@@ -32,6 +32,7 @@ export const PROVIDER_PRESETS: Record<ModelProvider, ProviderPreset> = {
 export interface EtymologyPluginSettings {
 	uiLanguage: UiLanguage;
 	modelProvider: ModelProvider;
+	debugLogging: boolean;
 	deepseekApiKey: string;
 	deepseekBaseUrl: string;
 	deepseekModel: string;
@@ -42,6 +43,7 @@ export interface EtymologyPluginSettings {
 export const DEFAULT_SETTINGS: EtymologyPluginSettings = {
 	uiLanguage: "auto",
 	modelProvider: "deepseek",
+	debugLogging: false,
 	deepseekApiKey: "",
 	deepseekBaseUrl: PROVIDER_PRESETS.deepseek.baseUrl,
 	deepseekModel: PROVIDER_PRESETS.deepseek.model,

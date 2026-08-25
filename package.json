@@ -7,6 +7,7 @@
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
 		"build": "npm run build:plugin && npm run package:release",
+		"deploy": "npm run build && node scripts/deploy-to-vault.mjs",
 		"build:plugin": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
 		"package:release": "node scripts/package-release.mjs",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",

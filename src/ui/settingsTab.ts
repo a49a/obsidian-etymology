@@ -57,6 +57,18 @@ export class EtymologySettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
+			.setName(t(language, "debugLoggingName"))
+			.setDesc(t(language, "debugLoggingDesc"))
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.debugLogging)
+					.onChange(async (value) => {
+						this.plugin.settings.debugLogging = value;
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
 			.setName(t(language, "apiKeyName"))
 			.setDesc(t(language, "apiKeyDesc"))
 			.addText((text) =>
