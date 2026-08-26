@@ -31,6 +31,7 @@ type I18nDict = {
 	outputDirDesc: string;
 	lookupCommandName: string;
 	aiCommandName: string;
+	debugCommandName: string;
 	lookupMenuName: string;
 	aiMenuName: string;
 	noticeSelectTextForLookup: string;
@@ -42,6 +43,7 @@ type I18nDict = {
 	noticeAiInProgress: string;
 	noticeAiSaved: string;
 	noticeAiFailed: string;
+	noticeNoDebugSnapshot: string;
 	outputMissingFileError: string;
 	outputOutOfVaultError: string;
 	outputEmptyError: string;
@@ -50,6 +52,11 @@ type I18nDict = {
 	resultEmpty: string;
 	markdownPromptHeading: string;
 	markdownResultHeading: string;
+	debugModalTitle: string;
+	debugModalMeta: string;
+	debugModalSelectedText: string;
+	debugModalPrompt: string;
+	debugModalResponse: string;
 };
 
 const ZH: I18nDict = {
@@ -82,6 +89,7 @@ const ZH: I18nDict = {
 		"默认相对 Vault 根目录；以 ./ 或 ../ 开头时相对当前笔记目录，例如 ./ai-results。",
 	lookupCommandName: "查找选中单词的词源 (Etymonline)",
 	aiCommandName: "发送选中文本到 AI 并生成文件",
+	debugCommandName: "查看最近一次 AI 调试信息 / Show last AI debug snapshot",
 	lookupMenuName: "查找选中单词的词源 (Etymonline)",
 	aiMenuName: "发送选中文本到 AI 并生成文件",
 	noticeSelectTextForLookup: "请先选中一个单词或短语再执行词源查找。",
@@ -93,6 +101,7 @@ const ZH: I18nDict = {
 	noticeAiInProgress: "正在将 \"{text}\" 发送到 AI...",
 	noticeAiSaved: "AI 结果已保存: {path}",
 	noticeAiFailed: "AI 生成失败，请检查 API Key、网络、Base URL 或模型设置。",
+	noticeNoDebugSnapshot: "暂无可查看的 AI 调试记录，请先执行一次 AI 生成。",
 	outputMissingFileError:
 		"未找到当前文件。使用 ./ 或 ../ 输出路径时，请在一个已保存的笔记中执行命令。",
 	outputOutOfVaultError: "输出路径超出了 Vault 范围，请调整输出目录设置。",
@@ -102,6 +111,11 @@ const ZH: I18nDict = {
 	resultEmpty: "未能解析到词源内容，请查看原始页面。",
 	markdownPromptHeading: "## Prompt",
 	markdownResultHeading: "## AI 返回",
+	debugModalTitle: "最近一次 AI 调试信息",
+	debugModalMeta: "时间 / 提供商 / 模型",
+	debugModalSelectedText: "选中文本",
+	debugModalPrompt: "Prompt",
+	debugModalResponse: "返回内容",
 };
 
 const EN: I18nDict = {
@@ -134,6 +148,7 @@ const EN: I18nDict = {
 		"By default it's relative to vault root. If it starts with ./ or ../, it's relative to the current note folder, e.g. ./ai-results.",
 	lookupCommandName: "Lookup etymology of selected text (Etymonline)",
 	aiCommandName: "Send selected text to AI and create note",
+	debugCommandName: "Show last AI debug snapshot / 查看最近一次 AI 调试信息",
 	lookupMenuName: "Lookup etymology of selected text (Etymonline)",
 	aiMenuName: "Send selected text to AI and create note",
 	noticeSelectTextForLookup: "Please select a word or phrase before etymology lookup.",
@@ -145,6 +160,7 @@ const EN: I18nDict = {
 	noticeAiInProgress: "Sending \"{text}\" to AI...",
 	noticeAiSaved: "AI result saved: {path}",
 	noticeAiFailed: "AI generation failed. Check API key, network, Base URL, or model settings.",
+	noticeNoDebugSnapshot: "No AI debug snapshot yet. Run an AI generation first.",
 	outputMissingFileError:
 		"Current file not found. When using ./ or ../ output paths, run the command in a saved note.",
 	outputOutOfVaultError: "The output path is outside your vault. Please adjust output directory.",
@@ -154,6 +170,11 @@ const EN: I18nDict = {
 	resultEmpty: "No etymology content was parsed. Please check the original page.",
 	markdownPromptHeading: "## Prompt",
 	markdownResultHeading: "## AI Result",
+	debugModalTitle: "Last AI debug snapshot",
+	debugModalMeta: "Time / Provider / Model",
+	debugModalSelectedText: "Selected text",
+	debugModalPrompt: "Prompt",
+	debugModalResponse: "Response",
 };
 
 const DICTS: Record<ResolvedLanguage, I18nDict> = {

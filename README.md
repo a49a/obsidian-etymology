@@ -34,6 +34,7 @@ Etymology Fetch is an Obsidian plugin that helps you:
 
 - `查找选中单词的词源 (Etymonline)`
 - `发送选中文本到 AI 并生成文件`
+- `查看最近一次 AI 调试信息`
 
 Both commands are available in Command Palette and editor context menu.
 
@@ -127,8 +128,6 @@ Required files:
 
 Generated note includes:
 
-- selected text as title
-- prompt sent to the model
 - AI response
 
 ### Development
@@ -144,6 +143,12 @@ npm run build
 
 ```bash
 npm run dev
+```
+
+- Watch and write directly to `dist/` (for quick local plugin testing):
+
+```bash
+npm run dev:dist
 ```
 
 ### Privacy and network
@@ -188,6 +193,7 @@ Etymology Fetch 是一个 Obsidian 插件，支持：
 
 - `查找选中单词的词源 (Etymonline)`
 - `发送选中文本到 AI 并生成文件`
+- `查看最近一次 AI 调试信息`
 
 以上命令都支持命令面板和编辑器右键菜单。
 
@@ -281,8 +287,6 @@ RELEASE_OUTPUT_DIR=/Users/yourname/Desktop/obsidian-release npm run build
 
 生成文件内容包括：
 
-- 选中文本标题
-- 实际发送的 Prompt
 - AI 返回内容
 
 ### 开发
@@ -298,6 +302,12 @@ npm run build
 
 ```bash
 npm run dev
+```
+
+- 监听并直接输出到 `dist/`（便于本地插件测试）：
+
+```bash
+npm run dev:dist
 ```
 
 ### 隐私与网络

@@ -6,6 +6,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
+		"dev:dist": "node scripts/dev-dist.mjs",
 		"build": "npm run build:plugin && npm run package:release",
 		"deploy": "npm run build && node scripts/deploy-to-vault.mjs",
 		"build:plugin": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production",
