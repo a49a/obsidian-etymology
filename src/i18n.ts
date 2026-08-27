@@ -13,6 +13,7 @@ type I18nDict = {
 	providerDesc: string;
 	providerDeepseek: string;
 	providerOpenai: string;
+	providerGlm: string;
 	providerAnthropic: string;
 	providerGemini: string;
 	providerCustom: string;
@@ -27,6 +28,9 @@ type I18nDict = {
 	promptTemplateName: string;
 	promptTemplateDesc: string;
 	promptTemplatePlaceholder: string;
+	defaultTagsName: string;
+	defaultTagsDesc: string;
+	defaultTagsPlaceholder: string;
 	outputDirName: string;
 	outputDirDesc: string;
 	lookupCommandName: string;
@@ -70,6 +74,7 @@ const ZH: I18nDict = {
 	providerDesc: "切换后会自动填入推荐的 Base URL 和模型名，可再手动调整。",
 	providerDeepseek: "DeepSeek",
 	providerOpenai: "OpenAI",
+	providerGlm: "智谱 GLM",
 	providerAnthropic: "Anthropic (Claude)",
 	providerGemini: "Google Gemini",
 	providerCustom: "自定义（OpenAI 兼容）",
@@ -80,10 +85,13 @@ const ZH: I18nDict = {
 	baseUrlName: "Base URL",
 	baseUrlDesc: "API 基础地址。不同提供商格式不同。",
 	modelName: "模型名",
-	modelDesc: "例如 deepseek-chat、gpt-4o-mini、claude-3-5-sonnet-latest、gemini-1.5-flash。",
+	modelDesc: "例如 deepseek-chat、gpt-4o-mini、glm-4-flash、claude-3-5-sonnet-latest、gemini-1.5-flash。",
 	promptTemplateName: "Prompt 模板",
 	promptTemplateDesc: "可使用变量 {{word}} 或 {{selectedText}}。",
 	promptTemplatePlaceholder: "输入发送给模型的提示词模板",
+	defaultTagsName: "默认 tags",
+	defaultTagsDesc: "生成新文件时写入 Frontmatter tags。支持逗号或空格分隔，例如 vocab,english。",
+	defaultTagsPlaceholder: "vocab,english",
 	outputDirName: "输出目录",
 	outputDirDesc:
 		"默认相对 Vault 根目录；以 ./ 或 ../ 开头时相对当前笔记目录，例如 ./ai-results。",
@@ -129,6 +137,7 @@ const EN: I18nDict = {
 	providerDesc: "When changed, recommended Base URL and model are auto-filled. You can still edit them.",
 	providerDeepseek: "DeepSeek",
 	providerOpenai: "OpenAI",
+	providerGlm: "Zhipu GLM",
 	providerAnthropic: "Anthropic (Claude)",
 	providerGemini: "Google Gemini",
 	providerCustom: "Custom (OpenAI-compatible)",
@@ -139,10 +148,13 @@ const EN: I18nDict = {
 	baseUrlName: "Base URL",
 	baseUrlDesc: "API base URL. Format differs by provider.",
 	modelName: "Model",
-	modelDesc: "Examples: deepseek-chat, gpt-4o-mini, claude-3-5-sonnet-latest, gemini-1.5-flash.",
+	modelDesc: "Examples: deepseek-chat, gpt-4o-mini, glm-4-flash, claude-3-5-sonnet-latest, gemini-1.5-flash.",
 	promptTemplateName: "Prompt template",
 	promptTemplateDesc: "You can use {{word}} or {{selectedText}}.",
 	promptTemplatePlaceholder: "Enter the prompt template sent to the model",
+	defaultTagsName: "Default tags",
+	defaultTagsDesc: "Written to frontmatter tags when creating a new file. Supports comma or space separators, e.g. vocab,english.",
+	defaultTagsPlaceholder: "vocab,english",
 	outputDirName: "Output directory",
 	outputDirDesc:
 		"By default it's relative to vault root. If it starts with ./ or ../, it's relative to the current note folder, e.g. ./ai-results.",
@@ -197,7 +209,11 @@ export function t(
 	params: Record<string, string> = {}
 ): string {
 	let text = DICTS[language][key];
-	for (const [paramKey, value] of Object.entries(params)) {
+	for (const paramKey in params) {
+		if (!Object.prototype.hasOwnProperty.call(params, paramKey)) {
+			continue;
+		}
+		const value = params[paramKey];
 		text = text.split(`{${paramKey}}`).join(value);
 	}
 	return text;

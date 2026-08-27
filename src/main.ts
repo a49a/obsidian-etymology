@@ -281,7 +281,7 @@ export default class EtymologyLookupPlugin extends Plugin {
                 filePath: outputFilePath,
                 createdAt: now,
             };
-            this.wrapSelectionWithWikiLink(editor, selectionSnapshot, normalizedSelectedText);
+            this.wrapSelectionWithWikiLink(editor, selectionSnapshot, normalizedSelectedText, outputFilePath);
             new Notice(t(this.getLanguage(), "noticeAiSaved", { path: outputFilePath }));
         } catch (error) {
             console.error("AI generation failed", error);
@@ -295,6 +295,12 @@ export default class EtymologyLookupPlugin extends Plugin {
 
     private normalizeSelectedTextForAi(selectedText: string): string {
         const trimmed = selectedText.trim();
+
+        const markdownLinkMatch = trimmed.match(/^\[([^\]]+)\]\([^)]*\)$/);
+        if (markdownLinkMatch?.[1]) {
+            return markdownLinkMatch[1].trim();
+        }
+
         const wikiLinkMatch = trimmed.match(/^\[\[(.+)\]\]$/);
         if (!wikiLinkMatch) {
             return trimmed;
@@ -339,7 +345,8 @@ export default class EtymologyLookupPlugin extends Plugin {
     private wrapSelectionWithWikiLink(
         editor: Editor | undefined,
         selectionSnapshot: SelectionSnapshot | undefined,
-        selectedText: string
+        selectedText: string,
+        outputFilePath: string
     ): void {
         if (!editor || !selectionSnapshot) {
             this.debugLog("Skip wikilink wrap because editor or selection snapshot is missing");
@@ -371,11 +378,23 @@ export default class EtymologyLookupPlugin extends Plugin {
             return;
         }
 
+        if (this.isSelectionInsideMarkdownLink(editor, selectionSnapshot.from, selectionSnapshot.to)) {
+            this.debugLog("Skip wikilink wrap because selection is inside an existing markdown link");
+            return;
+        }
+
         const leadingWhitespace = originalRangeText.match(/^\s*/)?.[0] ?? "";
         const trailingWhitespace = originalRangeText.match(/\s*$/)?.[0] ?? "";
-        const wrapped = `${leadingWhitespace}[[${trimmedSelection}]]${trailingWhitespace}`;
+        const linkTarget = this.toWikiLinkTarget(outputFilePath);
+        const wrapped = `${leadingWhitespace}[[${linkTarget}|${trimmedSelection}]]${trailingWhitespace}`;
         editor.replaceRange(wrapped, selectionSnapshot.from, selectionSnapshot.to);
         this.debugLog("Applied wikilink wrap", { linkedText: trimmedSelection });
+    }
+
+    private toWikiLinkTarget(outputFilePath: string): string {
+        return outputFilePath.endsWith(".md")
+            ? outputFilePath.slice(0, -3)
+            : outputFilePath;
     }
 
     private isSelectionAlreadyInsideWikiLink(
@@ -391,6 +410,30 @@ export default class EtymologyLookupPlugin extends Plugin {
         const before = line.slice(0, from.ch);
         const after = line.slice(to.ch);
         return before.endsWith("[[") && after.startsWith("]]");
+    }
+
+    private isSelectionInsideMarkdownLink(
+        editor: Editor,
+        from: EditorPosition,
+        to: EditorPosition
+    ): boolean {
+        if (from.line !== to.line) {
+            return false;
+        }
+
+        const line = editor.getLine(from.line);
+        const linkPattern = /\[[^\]]+\]\([^\)]+\)/g;
+        let match: RegExpExecArray | null;
+
+        while ((match = linkPattern.exec(line)) !== null) {
+            const start = match.index;
+            const end = start + match[0].length;
+            if (from.ch >= start && to.ch <= end) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private async writeDeepSeekResult(
@@ -418,10 +461,32 @@ export default class EtymologyLookupPlugin extends Plugin {
     }
 
     private buildInitialContent(result: string): string {
+        const tags = this.parseDefaultTags(this.settings.deepseekDefaultTags);
+
+        if (tags.length > 0) {
+            const frontmatterTags = tags.map((tag) => `"${tag}"`).join(", ");
+            return [
+                "---",
+                `tags: [${frontmatterTags}]`,
+                "---",
+                "",
+                result,
+                "",
+            ].join("\n");
+        }
+
         return [
             result,
             "",
         ].join("\n");
+    }
+
+    private parseDefaultTags(input: string): string[] {
+        return input
+            .split(/[\s,]+/)
+            .map((tag) => tag.trim().replace(/^#/, ""))
+            .filter((tag) => tag.length > 0)
+            .filter((tag, index, arr) => arr.indexOf(tag) === index);
     }
 
     private buildAppendBlock(result: string): string {
@@ -493,7 +558,8 @@ export default class EtymologyLookupPlugin extends Plugin {
     private getBaseOutputPath(outputDir: string, selectedText: string): string {
         const safeWord = selectedText
             .replace(/[\\/:*?"<>|]/g, "-")
-            .replace(/\s+/g, "-")
+            .replace(/\s+/g, " ")
+            .trim()
             .slice(0, 40) || "deepseek";
         return normalizePath(`${outputDir}/${safeWord}.md`);
     }

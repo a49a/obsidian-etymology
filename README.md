@@ -9,7 +9,7 @@
 Etymology Fetch is an Obsidian plugin that helps you:
 
 - look up the etymology of selected words or phrases from Etymonline
-- send selected text to AI models (DeepSeek/OpenAI/Claude/Gemini/custom)
+- send selected text to AI models (DeepSeek/OpenAI/GLM/Claude/Gemini/custom)
 - save the generated result as a Markdown note in your vault
 
 ### Features
@@ -45,11 +45,12 @@ Open Obsidian Settings -> Community plugins -> Etymology Fetch.
 | Setting | Description | Default |
 | --- | --- | --- |
 | Language | `Auto`, `Chinese`, `English` for plugin UI text. | `Auto` |
-| Model provider | `DeepSeek`, `OpenAI`, `Anthropic (Claude)`, `Google Gemini`, `Custom (OpenAI-compatible)` | `DeepSeek` |
+| Model provider | `DeepSeek`, `OpenAI`, `Zhipu GLM`, `Anthropic (Claude)`, `Google Gemini`, `Custom (OpenAI-compatible)` | `DeepSeek` |
 | API Key | Required to call selected provider API. | empty |
 | Base URL | API endpoint base URL. | provider-specific default |
 | Model | Model name. | provider-specific default |
 | Prompt template | Supports `{{word}}` and `{{selectedText}}`. | built-in vocabulary template |
+| Default tags | Written to frontmatter `tags` when creating a new file. | empty |
 | Output directory | By default relative to vault root. If path starts with `./` or `../`, it is relative to the current note folder. | `deepseek-results` |
 
 Prompt example:
@@ -128,6 +129,7 @@ Required files:
 
 Generated note includes:
 
+- frontmatter tags (if configured)
 - AI response
 
 ### Development
@@ -168,7 +170,7 @@ See `LICENSE`.
 Etymology Fetch 是一个 Obsidian 插件，支持：
 
 - 查询选中文本在 Etymonline 的词源信息
-- 将选中的单词或短语发送给 AI 模型（DeepSeek/OpenAI/Claude/Gemini/自定义）
+- 将选中的单词或短语发送给 AI 模型（DeepSeek/OpenAI/GLM/Claude/Gemini/自定义）
 - 将生成结果保存为 Vault 内的 Markdown 文件
 
 ### 功能
@@ -204,11 +206,12 @@ Etymology Fetch 是一个 Obsidian 插件，支持：
 | 设置项 | 说明 | 默认值 |
 | --- | --- | --- |
 | 界面语言 | `自动`、`中文`、`English`，用于插件界面文本。 | `自动` |
-| 模型提供商 | `DeepSeek`、`OpenAI`、`Anthropic (Claude)`、`Google Gemini`、`自定义（OpenAI 兼容）` | `DeepSeek` |
+| 模型提供商 | `DeepSeek`、`OpenAI`、`智谱 GLM`、`Anthropic (Claude)`、`Google Gemini`、`自定义（OpenAI 兼容）` | `DeepSeek` |
 | API Key | 调用所选提供商 API 必填。 | 空 |
 | Base URL | API 基础地址。 | 按提供商默认值 |
 | 模型名 | 使用的模型名称。 | 按提供商默认值 |
 | Prompt 模板 | 支持 `{{word}}` 和 `{{selectedText}}`。 | 内置单词学习模板 |
+| 默认 tags | 新建文件时写入 frontmatter 的 `tags`。 | 空 |
 | 输出目录 | 默认相对 Vault 根目录；如果以 `./` 或 `../` 开头，则相对当前笔记所在目录。 | `deepseek-results` |
 
 Prompt 示例：
@@ -287,6 +290,7 @@ RELEASE_OUTPUT_DIR=/Users/yourname/Desktop/obsidian-release npm run build
 
 生成文件内容包括：
 
+- frontmatter tags（如已配置）
 - AI 返回内容
 
 ### 开发

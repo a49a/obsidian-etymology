@@ -41,6 +41,7 @@ export class EtymologySettingTab extends PluginSettingTab {
 				dropdown
 					.addOption("deepseek", t(language, "providerDeepseek"))
 					.addOption("openai", t(language, "providerOpenai"))
+						.addOption("glm", t(language, "providerGlm"))
 					.addOption("anthropic", t(language, "providerAnthropic"))
 					.addOption("gemini", t(language, "providerGemini"))
 					.addOption("custom", t(language, "providerCustom"))
@@ -123,6 +124,19 @@ export class EtymologySettingTab extends PluginSettingTab {
 				text.inputEl.rows = 8;
 				text.inputEl.style.width = "100%";
 			});
+
+		new Setting(containerEl)
+			.setName(t(language, "defaultTagsName"))
+			.setDesc(t(language, "defaultTagsDesc"))
+			.addText((text) =>
+				text
+					.setPlaceholder(t(language, "defaultTagsPlaceholder"))
+					.setValue(this.plugin.settings.deepseekDefaultTags)
+					.onChange(async (value) => {
+						this.plugin.settings.deepseekDefaultTags = value;
+						await this.plugin.saveSettings();
+					})
+			);
 
 		new Setting(containerEl)
 			.setName(t(language, "outputDirName"))

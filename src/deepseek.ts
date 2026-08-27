@@ -167,6 +167,7 @@ export async function generateWithAI(params: AIGenerateParams): Promise<string> 
 			return requestGemini(params);
 		case "deepseek":
 		case "openai":
+		case "glm":
 		case "custom":
 		default:
 			return requestOpenAICompatible(params);
