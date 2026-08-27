@@ -126,6 +126,21 @@ export class EtymologySettingTab extends PluginSettingTab {
 			});
 
 		new Setting(containerEl)
+			.setName(t(language, "organizePromptName"))
+			.setDesc(t(language, "organizePromptDesc"))
+			.addTextArea((text) => {
+				text
+					.setPlaceholder(t(language, "organizePromptPlaceholder"))
+					.setValue(this.plugin.settings.organizePromptTemplate)
+					.onChange(async (value) => {
+						this.plugin.settings.organizePromptTemplate = value;
+						await this.plugin.saveSettings();
+					});
+				text.inputEl.rows = 10;
+				text.inputEl.style.width = "100%";
+			});
+
+		new Setting(containerEl)
 			.setName(t(language, "defaultTagsName"))
 			.setDesc(t(language, "defaultTagsDesc"))
 			.addText((text) =>

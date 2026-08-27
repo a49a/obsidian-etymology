@@ -1,16 +1,15 @@
 # Etymology Fetch
 
-[English](#english) | [中文](#中文)
+[English](README.md) | [中文](README-zh.md)
 
 ---
-
-## English
 
 Etymology Fetch is an Obsidian plugin that helps you:
 
 - look up the etymology of selected words or phrases from Etymonline
 - send selected text to AI models (DeepSeek/OpenAI/GLM/Claude/Gemini/custom)
 - save the generated result as a Markdown note in your vault
+- organize word notes into GRE semantic-group subfolders using an LLM plan
 
 ### Features
 
@@ -30,13 +29,22 @@ Etymology Fetch is an Obsidian plugin that helps you:
 - File name uses the selected text (sanitized for file safety), for example `etymology.md`.
 - If the file already exists, append a numeric suffix like `etymology-1.md` to avoid overwrite.
 
+#### 3) GRE word-folder organization
+
+- Scan Markdown word notes directly inside the configured output directory.
+- Send filenames only to the selected LLM for semantic grouping.
+- Review the returned folder plan before moving files.
+- Validate that every file is assigned exactly once and check target conflicts.
+- Restrict all planning and file moves to the configured output directory.
+
 ### Commands
 
 - `查找选中单词的词源 (Etymonline)`
 - `发送选中文本到 AI 并生成文件`
 - `查看最近一次 AI 调试信息`
+- `Organize AI word notes by GRE semantic groups`
 
-Both commands are available in Command Palette and editor context menu.
+The commands are available in Command Palette; the first two are also available in the editor context menu.
 
 ### AI settings
 
@@ -50,6 +58,7 @@ Open Obsidian Settings -> Community plugins -> Etymology Fetch.
 | Base URL | API endpoint base URL. | provider-specific default |
 | Model | Model name. | provider-specific default |
 | Prompt template | Supports `{{word}}` and `{{selectedText}}`. | built-in vocabulary template |
+| Word organization prompt | Prompt used to group filenames into GRE semantic folders. Keep `{{fileNames}}`; it is replaced with the current filenames. | built-in GRE grouping template |
 | Default tags | Written to frontmatter `tags` when creating a new file. | empty |
 | Output directory | By default relative to vault root. If path starts with `./` or `../`, it is relative to the current note folder. | `deepseek-results` |
 
@@ -132,6 +141,16 @@ Generated note includes:
 - frontmatter tags (if configured)
 - AI response
 
+#### Organize word notes
+
+Run `Organize AI word notes by GRE semantic groups` to scan Markdown files directly inside the configured output directory. The plugin sends only their filenames to the selected LLM, asks for a strict JSON folder plan based on GRE semantic groups, shows the plan for confirmation, and then moves the files into the planned subfolders.
+
+The organization prompt can be edited in settings. Keep the `{{fileNames}}` placeholder so the current filenames are included. The plugin appends the required JSON response and assignment constraints automatically.
+
+Progress notices identify scanning, prompt preparation, waiting for the LLM, response validation, confirmation, and file movement. During movement, the notice shows the completed and total file counts.
+
+The organization operation never reads or moves files outside the configured output directory. Plans containing absolute paths, parent-directory traversal, or other out-of-scope paths are rejected before any file is moved.
+
 ### Development
 
 - Node.js 18+ recommended
@@ -157,169 +176,9 @@ npm run dev:dist
 
 - Etymonline lookup sends selected text to Etymonline.
 - AI generation sends selected text and rendered prompt to your configured provider endpoint.
+- Word organization sends filenames from the configured output directory to your configured provider endpoint; note contents are not sent.
 - Generated output is saved only in your current vault.
 
 ### License
 
 See `LICENSE`.
-
----
-
-## 中文
-
-Etymology Fetch 是一个 Obsidian 插件，支持：
-
-- 查询选中文本在 Etymonline 的词源信息
-- 将选中的单词或短语发送给 AI 模型（DeepSeek/OpenAI/GLM/Claude/Gemini/自定义）
-- 将生成结果保存为 Vault 内的 Markdown 文件
-
-### 功能
-
-#### 1）Etymonline 词源查询
-
-- 选中单词或短语后，从 [Etymonline](https://www.etymonline.com/) 获取词源。
-- 在 Obsidian 弹窗中展示解析结果。
-- 可跳转到 Etymonline 原始页面。
-
-#### 2）AI 生成学习笔记
-
-- 将选中文本发送到你选择的 AI 提供商 API。
-- 在插件设置中自定义 Prompt 模板。
-- 模板支持 `{{word}}` 或 `{{selectedText}}` 变量。
-- 将模型返回内容写入 Vault 内 Markdown 文件。
-- 输出目录不存在时自动创建。
-- 文件名默认使用选中文本（会做文件名安全处理），例如 `etymology.md`。
-- 如果同名文件已存在，会自动追加序号，如 `etymology-1.md`，避免覆盖。
-
-### 命令
-
-- `查找选中单词的词源 (Etymonline)`
-- `发送选中文本到 AI 并生成文件`
-- `查看最近一次 AI 调试信息`
-
-以上命令都支持命令面板和编辑器右键菜单。
-
-### AI 设置
-
-在 Obsidian 中打开：设置 -> 第三方插件 -> Etymology Fetch。
-
-| 设置项 | 说明 | 默认值 |
-| --- | --- | --- |
-| 界面语言 | `自动`、`中文`、`English`，用于插件界面文本。 | `自动` |
-| 模型提供商 | `DeepSeek`、`OpenAI`、`智谱 GLM`、`Anthropic (Claude)`、`Google Gemini`、`自定义（OpenAI 兼容）` | `DeepSeek` |
-| API Key | 调用所选提供商 API 必填。 | 空 |
-| Base URL | API 基础地址。 | 按提供商默认值 |
-| 模型名 | 使用的模型名称。 | 按提供商默认值 |
-| Prompt 模板 | 支持 `{{word}}` 和 `{{selectedText}}`。 | 内置单词学习模板 |
-| 默认 tags | 新建文件时写入 frontmatter 的 `tags`。 | 空 |
-| 输出目录 | 默认相对 Vault 根目录；如果以 `./` 或 `../` 开头，则相对当前笔记所在目录。 | `deepseek-results` |
-
-Prompt 示例：
-
-```text
-请根据下面的单词生成学习笔记，输出 Markdown 格式，包含词义、词根词缀、例句和记忆建议。
-
-单词：{{word}}
-```
-
-### 本地测试安装
-
-一键部署（构建 + 复制到 Vault 插件目录）：
-
-```bash
-npm run deploy -- --vault "/path/to/YourVault"
-```
-
-或者直接指定插件目录：
-
-```bash
-npm run deploy -- --plugin-dir "/path/to/YourVault/.obsidian/plugins/etymology-fetch"
-```
-
-1. 在项目中构建插件：
-
-```bash
-npm install
-npm run build
-```
-
-构建后，发布文件会自动整理到：
-
-```text
-dist/
-```
-
-也可以自定义输出目录（支持相对路径和绝对路径）：
-
-```bash
-# 相对路径（相对于项目根目录）
-RELEASE_OUTPUT_DIR=release-files npm run build
-
-# 绝对路径
-RELEASE_OUTPUT_DIR=/Users/yourname/Desktop/obsidian-release npm run build
-```
-
-1. 从 `dist/` 将以下文件复制到 Vault 插件目录：
-
-```text
-<Vault>/.obsidian/plugins/etymology-fetch/
-```
-
-至少包含：
-
-- `main.js`
-- `manifest.json`
-- `styles.css`
-
-1. 在 Obsidian 的 设置 -> 第三方插件 中启用插件。
-
-### 使用方式
-
-#### 词源查询
-
-1. 在笔记中选中单词或短语。
-2. 执行 `查找选中单词的词源 (Etymonline)`。
-3. 在弹窗中查看结果。
-
-#### AI 生成文件
-
-1. 先配置模型提供商和 API Key。
-2. 选中单词或短语。
-3. 执行 `发送选中文本到 AI 并生成文件`。
-4. 在你配置的输出目录中查看生成的 Markdown 文件。
-
-生成文件内容包括：
-
-- frontmatter tags（如已配置）
-- AI 返回内容
-
-### 开发
-
-- 建议 Node.js 18+
-- 构建：
-
-```bash
-npm run build
-```
-
-- 开发监听：
-
-```bash
-npm run dev
-```
-
-- 监听并直接输出到 `dist/`（便于本地插件测试）：
-
-```bash
-npm run dev:dist
-```
-
-### 隐私与网络
-
-- 词源查询会将选中文本发送到 Etymonline。
-- AI 生成会将选中文本和渲染后的 Prompt 发送到你配置的模型提供商接口地址。
-- 生成结果仅写入当前 Vault。
-
-### 许可证
-
-详见 `LICENSE`。

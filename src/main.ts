@@ -16,6 +16,7 @@ import { buildDeepSeekPrompt, DEFAULT_SETTINGS, EtymologyPluginSettings } from "
 import { DebugResultModal, type LastAiDebugSnapshot } from "./ui/debugResultModal";
 import { EtymologyResultModal } from "./ui/resultModal";
 import { EtymologySettingTab } from "./ui/settingsTab";
+import { WordOrganizationModal, type WordOrganizationAssignment } from "./ui/wordOrganizationModal";
 
 interface SelectionSnapshot {
     from: EditorPosition;
@@ -107,6 +108,12 @@ export default class EtymologyLookupPlugin extends Plugin {
 
                 new DebugResultModal(this.app, this.getLanguage(), this.lastAiDebugSnapshot).open();
             },
+        });
+
+        this.addCommand({
+            id: "organize-ai-word-notes",
+            name: t(language, "organizeWordsCommandName"),
+            callback: () => void this.organizeAiWordNotes(),
         });
 
         this.registerEvent(
@@ -228,14 +235,25 @@ export default class EtymologyLookupPlugin extends Plugin {
             return;
         }
 
+        let progressNotice: Notice | undefined;
+        const updateProgress = (message: string): void => {
+            progressNotice?.hide();
+            progressNotice = new Notice(message, 0);
+        };
+        const clearProgress = (): void => {
+            progressNotice?.hide();
+            progressNotice = undefined;
+        };
+
         try {
-            new Notice(t(this.getLanguage(), "noticeAiInProgress", { text: selectedText }));
+            updateProgress(t(this.getLanguage(), "noticeAiPreparing", { text: selectedText }));
 
             const prompt = buildDeepSeekPrompt(
                 this.settings.deepseekPromptTemplate,
                 normalizedSelectedText
             );
 
+            updateProgress(t(this.getLanguage(), "noticeAiWaitingForLlm", { text: selectedText }));
             const generatedText = await generateWithAI({
                 provider: this.settings.modelProvider,
                 apiKey: this.settings.deepseekApiKey,
@@ -243,6 +261,7 @@ export default class EtymologyLookupPlugin extends Plugin {
                 model: this.settings.deepseekModel,
                 prompt,
             });
+            updateProgress(t(this.getLanguage(), "noticeAiResponseReceived"));
 
             this.lastAiDebugSnapshot = {
                 provider: this.settings.modelProvider,
@@ -270,10 +289,12 @@ export default class EtymologyLookupPlugin extends Plugin {
                     triggerSource,
                     filePath: this.lastGeneration.filePath,
                 });
+                clearProgress();
                 new Notice(t(this.getLanguage(), "noticeAiSaved", { path: this.lastGeneration.filePath }));
                 return;
             }
 
+            updateProgress(t(this.getLanguage(), "noticeAiWritingFile"));
             const outputFilePath = await this.writeDeepSeekResult(normalizedSelectedText, generatedText, sourceFilePath);
             this.debugLog("Created AI result file", { triggerSource, outputFilePath });
             this.lastGeneration = {
@@ -281,16 +302,209 @@ export default class EtymologyLookupPlugin extends Plugin {
                 filePath: outputFilePath,
                 createdAt: now,
             };
+            updateProgress(t(this.getLanguage(), "noticeAiUpdatingLink"));
             this.wrapSelectionWithWikiLink(editor, selectionSnapshot, normalizedSelectedText, outputFilePath);
+            clearProgress();
             new Notice(t(this.getLanguage(), "noticeAiSaved", { path: outputFilePath }));
         } catch (error) {
             console.error("AI generation failed", error);
+            clearProgress();
             this.debugLog("AI generation failed", {
                 triggerSource,
                 errorMessage: error instanceof Error ? error.message : String(error),
             });
             new Notice(t(this.getLanguage(), "noticeAiFailed"));
         }
+    }
+
+    private async organizeAiWordNotes(): Promise<void> {
+        if (!this.settings.deepseekApiKey) {
+            new Notice(t(this.getLanguage(), "noticeMissingApiKey"));
+            return;
+        }
+
+        let progressNotice: Notice | undefined;
+        const updateProgress = (message: string): void => {
+            progressNotice?.hide();
+            progressNotice = new Notice(message, 0);
+        };
+        const clearProgress = (): void => {
+            progressNotice?.hide();
+            progressNotice = undefined;
+        };
+
+        try {
+            updateProgress(t(this.getLanguage(), "noticeOrganizeScanning"));
+            const outputDir = this.resolveOutputDir(
+                this.settings.deepseekOutputDir || "deepseek-results",
+                this.app.workspace.getActiveFile()?.path
+            );
+            const folder = this.app.vault.getAbstractFileByPath(outputDir);
+            if (!(folder instanceof TFolder)) {
+                new Notice(t(this.getLanguage(), "noticeOrganizeFolderMissing", { path: outputDir }));
+                return;
+            }
+
+            const files = folder.children.filter(
+                (child): child is TFile => child instanceof TFile && child.extension.toLowerCase() === "md"
+            );
+            if (files.length === 0) {
+                clearProgress();
+                new Notice(t(this.getLanguage(), "noticeOrganizeNoFiles"));
+                return;
+            }
+
+            updateProgress(t(this.getLanguage(), "noticeOrganizePreparing", { count: String(files.length) }));
+            const fileNames = files.map((file) => file.name);
+            const prompt = this.buildOrganizationPrompt(fileNames);
+            updateProgress(t(this.getLanguage(), "noticeOrganizeWaitingForLlm", { count: String(files.length) }));
+            const response = await generateWithAI({
+                provider: this.settings.modelProvider,
+                apiKey: this.settings.deepseekApiKey,
+                baseUrl: this.settings.deepseekBaseUrl,
+                model: this.settings.deepseekModel,
+                prompt,
+            });
+            updateProgress(t(this.getLanguage(), "noticeOrganizeParsing"));
+            const assignments = this.parseOrganizationPlan(response, fileNames);
+            updateProgress(t(this.getLanguage(), "noticeOrganizeAwaitingConfirmation", { count: String(assignments.length) }));
+
+            new WordOrganizationModal(this.app, this.getLanguage(), assignments, async () => {
+                try {
+                    updateProgress(t(this.getLanguage(), "noticeOrganizeMoving", { count: String(assignments.length) }));
+                    await this.applyOrganizationPlan(outputDir, assignments, (current, total) => {
+                        updateProgress(t(this.getLanguage(), "noticeOrganizeMoved", {
+                            current: String(current),
+                            total: String(total),
+                        }));
+                    });
+                } catch (error) {
+                    console.error("Applying word organization plan failed", error);
+                    clearProgress();
+                    new Notice(t(this.getLanguage(), "noticeOrganizeFailed", {
+                        error: error instanceof Error ? error.message : String(error),
+                    }));
+                }
+            }, clearProgress).open();
+        } catch (error) {
+            console.error("Word organization failed", error);
+            clearProgress();
+            this.debugLog("Word organization failed", {
+                errorMessage: error instanceof Error ? error.message : String(error),
+            });
+            new Notice(t(this.getLanguage(), "noticeOrganizeFailed", {
+                error: error instanceof Error ? error.message : String(error),
+            }));
+        }
+    }
+
+    private buildOrganizationPrompt(fileNames: string[]): string {
+        const fileList = fileNames.map((fileName) => `- ${fileName}`).join("\n");
+        const template = this.settings.organizePromptTemplate.trim() || DEFAULT_SETTINGS.organizePromptTemplate;
+        const renderedTemplate = template.replace(/\{\{fileNames\}\}/g, fileList);
+        return [
+            renderedTemplate,
+            renderedTemplate.includes(fileList) ? "" : `All filenames in this directory:\n${fileList}`,
+            "Create subfolder names only; do not include the root output directory, file extensions, or path traversal.",
+            "Every filename must appear exactly once in the assignments. Do not invent or omit filenames.",
+            "Return JSON only in this exact shape: {\"assignments\":[{\"file\":\"word.md\",\"folder\":\"Emotions\"}] }.",
+        ].join("\n\n");
+    }
+
+    private parseOrganizationPlan(response: string, fileNames: string[]): WordOrganizationAssignment[] {
+        const jsonText = response.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+        const start = jsonText.indexOf("{");
+        const end = jsonText.lastIndexOf("}");
+        if (start < 0 || end <= start) {
+            throw new Error(t(this.getLanguage(), "organizeInvalidPlan"));
+        }
+
+        const parsed: unknown = JSON.parse(jsonText.slice(start, end + 1));
+        if (!parsed || typeof parsed !== "object" || !Array.isArray((parsed as { assignments?: unknown }).assignments)) {
+            throw new Error(t(this.getLanguage(), "organizeInvalidPlan"));
+        }
+
+        const knownFiles = new Set(fileNames);
+        const assignedFiles = new Set<string>();
+        const assignments: WordOrganizationAssignment[] = [];
+        for (const item of (parsed as { assignments: unknown[] }).assignments) {
+            if (!item || typeof item !== "object") {
+                throw new Error(t(this.getLanguage(), "organizeInvalidPlan"));
+            }
+            const assignment = item as { file?: unknown; folder?: unknown };
+            if (typeof assignment.file !== "string" || typeof assignment.folder !== "string") {
+                throw new Error(t(this.getLanguage(), "organizeInvalidPlan"));
+            }
+            const file = assignment.file.trim();
+            const folder = this.normalizeOrganizationFolder(assignment.folder);
+            if (!knownFiles.has(file) || assignedFiles.has(file) || !folder) {
+                throw new Error(t(this.getLanguage(), "organizeInvalidPlan"));
+            }
+            assignedFiles.add(file);
+            assignments.push({ file, folder });
+        }
+
+        if (assignedFiles.size !== knownFiles.size) {
+            throw new Error(t(this.getLanguage(), "organizeInvalidPlan"));
+        }
+        return assignments;
+    }
+
+    private normalizeOrganizationFolder(folder: string): string {
+        const normalized = folder.trim().replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
+        const parts = normalized.split("/").filter(Boolean);
+        if (!parts.length || parts.some((part) => part === "." || part === "..")) {
+            return "";
+        }
+        return parts.join("/");
+    }
+
+    private async applyOrganizationPlan(
+        outputDir: string,
+        assignments: WordOrganizationAssignment[],
+        onMoveProgress: (current: number, total: number) => void
+    ): Promise<void> {
+        const normalizedOutputDir = normalizePath(outputDir).replace(/\/+$/, "");
+        const currentFolder = this.app.vault.getAbstractFileByPath(normalizedOutputDir);
+        if (!(currentFolder instanceof TFolder)) {
+            throw new Error(t(this.getLanguage(), "noticeOrganizeFolderMissing", { path: normalizedOutputDir }));
+        }
+
+        const moves = assignments.map((assignment) => {
+            const sourcePath = normalizePath(`${outputDir}/${assignment.file}`);
+            const targetPath = normalizePath(`${outputDir}/${assignment.folder}/${assignment.file}`);
+            if (
+                !this.isPathWithinDirectory(sourcePath, normalizedOutputDir) ||
+                !this.isPathWithinDirectory(targetPath, normalizedOutputDir)
+            ) {
+                throw new Error(t(this.getLanguage(), "organizeOutOfScope"));
+            }
+
+            const source = this.app.vault.getAbstractFileByPath(sourcePath);
+            if (!(source instanceof TFile)) {
+                throw new Error(t(this.getLanguage(), "organizeFileMissing", { file: assignment.file }));
+            }
+            const existing = this.app.vault.getAbstractFileByPath(targetPath);
+            if (existing && targetPath !== sourcePath) {
+                throw new Error(t(this.getLanguage(), "organizeTargetExists", { file: assignment.file }));
+            }
+            return { source, targetPath };
+        });
+
+        for (const [index, move] of moves.entries()) {
+            await this.ensureFolder(move.targetPath.slice(0, move.targetPath.lastIndexOf("/")));
+            if (move.source.path !== move.targetPath) {
+                await this.app.vault.rename(move.source, move.targetPath);
+            }
+            onMoveProgress(index + 1, moves.length);
+        }
+        new Notice(t(this.getLanguage(), "noticeOrganizeSaved", { count: String(assignments.length) }));
+    }
+
+    private isPathWithinDirectory(filePath: string, directoryPath: string): boolean {
+        const normalizedFilePath = normalizePath(filePath).replace(/^\/+|\/+$/g, "");
+        const normalizedDirectoryPath = normalizePath(directoryPath).replace(/^\/+|\/+$/g, "");
+        return normalizedFilePath.startsWith(`${normalizedDirectoryPath}/`);
     }
 
     private normalizeSelectedTextForAi(selectedText: string): string {

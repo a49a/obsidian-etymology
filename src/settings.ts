@@ -41,6 +41,7 @@ export interface EtymologyPluginSettings {
 	deepseekBaseUrl: string;
 	deepseekModel: string;
 	deepseekPromptTemplate: string;
+	organizePromptTemplate: string;
 	deepseekOutputDir: string;
 	deepseekDefaultTags: string;
 }
@@ -54,6 +55,8 @@ export const DEFAULT_SETTINGS: EtymologyPluginSettings = {
 	deepseekModel: PROVIDER_PRESETS.deepseek.model,
 	deepseekPromptTemplate:
 		"请根据下面的单词生成学习笔记，输出 Markdown 格式，包含词义、词根词缀、例句和记忆建议。\n\n单词：{{word}}",
+	organizePromptTemplate:
+		"请根据下面的 GRE 单词文件名，按照 GRE 常考意群重新规划目录。只根据单词名判断语义，将相近词归入同一个简洁的英文子目录，例如 Emotions、Conflict、Society、Economics、Science、Politics 或 Evaluation。\n\n文件名：\n{{fileNames}}",
 	deepseekOutputDir: "deepseek-results",
 	deepseekDefaultTags: "",
 };
