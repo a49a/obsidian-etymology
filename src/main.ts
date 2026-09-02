@@ -17,6 +17,7 @@ import { DebugResultModal, type LastAiDebugSnapshot } from "./ui/debugResultModa
 import { EtymologyResultModal } from "./ui/resultModal";
 import { EtymologySettingTab } from "./ui/settingsTab";
 import { WordOrganizationModal, type WordOrganizationAssignment } from "./ui/wordOrganizationModal";
+import { removeDeletedAiNoteLinks, removeMissingAiNoteLinks } from "./utils/removeDeletedAiNoteLinks";
 
 interface SelectionSnapshot {
     from: EditorPosition;
@@ -116,12 +117,27 @@ export default class EtymologyLookupPlugin extends Plugin {
             callback: () => void this.organizeAiWordNotes(),
         });
 
+		this.addCommand({
+			id: "clean-missing-ai-note-links",
+			name: t(language, "cleanMissingAiLinksCommandName"),
+			callback: () => void this.cleanMissingAiNoteLinks(),
+		});
+
         this.registerEvent(
             this.app.workspace.on("editor-menu", (menu: Menu, editor) => {
                 this.addLookupMenuItem(menu, () => editor.getSelection().trim());
                 this.addDeepSeekMenuItem(menu, editor, () => editor.getSelection().trim());
             })
         );
+
+		this.registerEvent(
+			this.app.vault.on("delete", (file) => {
+				if (!(file instanceof TFile) || file.extension.toLowerCase() !== "md") {
+					return;
+				}
+				void this.removeLinksForDeletedAiNote(file);
+			})
+		);
     }
 
     onunload() {
@@ -335,10 +351,7 @@ export default class EtymologyLookupPlugin extends Plugin {
 
         try {
             updateProgress(t(this.getLanguage(), "noticeOrganizeScanning"));
-            const outputDir = this.resolveOutputDir(
-                this.settings.deepseekOutputDir || "deepseek-results",
-                this.app.workspace.getActiveFile()?.path
-            );
+            const outputDir = this.resolveOutputDir(this.settings.deepseekOutputDir || "deepseek-results");
             const folder = this.app.vault.getAbstractFileByPath(outputDir);
             if (!(folder instanceof TFolder)) {
                 new Notice(t(this.getLanguage(), "noticeOrganizeFolderMissing", { path: outputDir }));
@@ -655,7 +668,7 @@ export default class EtymologyLookupPlugin extends Plugin {
         result: string,
         sourceFilePath?: string
     ): Promise<string> {
-        const outputDir = this.resolveOutputDir(this.settings.deepseekOutputDir || "deepseek-results", sourceFilePath);
+        const outputDir = this.resolveOutputDir(this.settings.deepseekOutputDir || "deepseek-results");
         await this.ensureFolder(outputDir);
 
         const filePath = this.getBaseOutputPath(outputDir, selectedText);
@@ -673,6 +686,56 @@ export default class EtymologyLookupPlugin extends Plugin {
         this.debugLog("Created new AI note", { filePath });
         return filePath;
     }
+
+	private async removeLinksForDeletedAiNote(deletedFile: TFile): Promise<void> {
+		const wordNotesDir = this.settings.wordNotesDir.trim();
+		if (!wordNotesDir) {
+			return;
+		}
+
+		try {
+			const outputDir = this.resolveOutputDir(this.settings.deepseekOutputDir || "deepseek-results");
+			if (!deletedFile.path.startsWith(`${outputDir}/`)) {
+				return;
+			}
+			const updatedFiles = await removeDeletedAiNoteLinks(
+				this.app.vault,
+				deletedFile,
+				wordNotesDir
+			);
+			this.debugLog("Removed links to deleted AI note", {
+				deletedFilePath: deletedFile.path,
+				updatedFiles,
+			});
+		} catch (error) {
+			console.error("Removing links to deleted AI note failed", error);
+		}
+	}
+
+	private async cleanMissingAiNoteLinks(): Promise<void> {
+		const wordNotesDir = this.settings.wordNotesDir.trim();
+		if (!wordNotesDir) {
+			new Notice(t(this.getLanguage(), "noticeWordNotesDirRequired"));
+			return;
+		}
+
+		try {
+			const outputDir = this.resolveOutputDir(this.settings.deepseekOutputDir || "deepseek-results");
+			const updatedFiles = await removeMissingAiNoteLinks(
+				this.app.vault,
+				wordNotesDir,
+				outputDir
+			);
+			new Notice(t(this.getLanguage(), "noticeMissingAiLinksCleaned", {
+				count: String(updatedFiles),
+			}));
+		} catch (error) {
+			console.error("Cleaning missing AI note links failed", error);
+			new Notice(t(this.getLanguage(), "noticeMissingAiLinksCleanupFailed", {
+				error: error instanceof Error ? error.message : String(error),
+			}));
+		}
+	}
 
     private buildInitialContent(result: string): string {
         const tags = this.parseDefaultTags(this.settings.deepseekDefaultTags);
@@ -716,29 +779,17 @@ export default class EtymologyLookupPlugin extends Plugin {
         ].join("\n");
     }
 
-    private resolveOutputDir(configuredDir: string, sourceFilePath?: string): string {
+    private resolveOutputDir(configuredDir: string): string {
         const raw = configuredDir.trim();
         if (!raw) {
             return "deepseek-results";
         }
 
-        const isNoteRelative = raw.startsWith("./") || raw.startsWith("../");
-        const combined = isNoteRelative
-            ? `${this.getParentDir(sourceFilePath)}/${raw}`
-            : raw;
-
-        return this.normalizeVaultPath(combined);
-    }
-
-    private getParentDir(filePath?: string): string {
-        if (!filePath) {
-            throw new Error(t(this.getLanguage(), "outputMissingFileError"));
+        if (raw.startsWith("./") || raw.startsWith("../")) {
+			throw new Error(t(this.getLanguage(), "outputRelativePathNotAllowed"));
         }
 
-        const normalized = normalizePath(filePath);
-        const parts = normalized.split("/");
-        parts.pop();
-        return parts.join("/");
+        return this.normalizeVaultPath(raw);
     }
 
     private normalizeVaultPath(inputPath: string): string {

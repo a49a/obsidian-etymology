@@ -36,12 +36,15 @@ type I18nDict = {
 	defaultTagsPlaceholder: string;
 	outputDirName: string;
 	outputDirDesc: string;
+	wordNotesDirName: string;
+	wordNotesDirDesc: string;
 	lookupCommandName: string;
 	aiCommandName: string;
 	debugCommandName: string;
 	lookupMenuName: string;
 	aiMenuName: string;
 	organizeWordsCommandName: string;
+	cleanMissingAiLinksCommandName: string;
 	organizeModalTitle: string;
 	organizeModalDesc: string;
 	organizeConfirm: string;
@@ -72,12 +75,16 @@ type I18nDict = {
 	noticeOrganizeMoved: string;
 	noticeOrganizeFailed: string;
 	noticeOrganizeSaved: string;
+	noticeWordNotesDirRequired: string;
+	noticeMissingAiLinksCleaned: string;
+	noticeMissingAiLinksCleanupFailed: string;
 	organizeInvalidPlan: string;
 	organizeOutOfScope: string;
 	organizeFileMissing: string;
 	organizeTargetExists: string;
 	outputMissingFileError: string;
 	outputOutOfVaultError: string;
+	outputRelativePathNotAllowed: string;
 	outputEmptyError: string;
 	pathConflictError: string;
 	resultViewSource: string;
@@ -125,13 +132,17 @@ const ZH: I18nDict = {
 	defaultTagsPlaceholder: "vocab,english",
 	outputDirName: "输出目录",
 	outputDirDesc:
-		"默认相对 Vault 根目录；以 ./ 或 ../ 开头时相对当前笔记目录，例如 ./ai-results。",
+		"相对 Vault 根目录的目录，例如 AI/StudyNotes。不支持以 ./ 或 ../ 开头的路径。",
+	wordNotesDirName: "单词笔记目录",
+	wordNotesDirDesc:
+		"删除 AI 学习笔记时，在此目录及其子目录中将指向该笔记的 [[链接]] 还原为普通文字。路径相对 Vault 根目录。",
 	lookupCommandName: "查找选中单词的词源 (Etymonline)",
 	aiCommandName: "发送选中文本到 AI 并生成文件",
 	debugCommandName: "查看最近一次 AI 调试信息 / Show last AI debug snapshot",
 	lookupMenuName: "查找选中单词的词源 (Etymonline)",
 	aiMenuName: "发送选中文本到 AI 并生成文件",
 	organizeWordsCommandName: "按 GRE 意群整理 AI 单词目录",
+	cleanMissingAiLinksCommandName: "清理已删除 AI 学习笔记的链接",
 	organizeModalTitle: "确认单词目录规划",
 	organizeModalDesc: "LLM 已为 {count} 个单词生成目录规划，请确认后移动文件。",
 	organizeConfirm: "确认移动",
@@ -162,6 +173,9 @@ const ZH: I18nDict = {
 	noticeOrganizeMoved: "步骤 6/6：已移动 {current}/{total} 个文件...",
 	noticeOrganizeFailed: "单词目录整理失败：{error}",
 	noticeOrganizeSaved: "已按规划整理 {count} 个单词文件。",
+	noticeWordNotesDirRequired: "请先在插件设置中填写单词笔记目录。",
+	noticeMissingAiLinksCleaned: "已清理 {count} 个笔记中的失效 AI 链接。",
+	noticeMissingAiLinksCleanupFailed: "清理失效 AI 链接失败：{error}",
 	organizeInvalidPlan: "LLM 返回的目录规划无效，未移动任何文件。",
 	organizeOutOfScope: "目录规划包含输出目录之外的路径，未移动任何文件。",
 	organizeFileMissing: "待整理文件不存在：{file}",
@@ -169,6 +183,7 @@ const ZH: I18nDict = {
 	outputMissingFileError:
 		"未找到当前文件。使用 ./ 或 ../ 输出路径时，请在一个已保存的笔记中执行命令。",
 	outputOutOfVaultError: "输出路径超出了 Vault 范围，请调整输出目录设置。",
+	outputRelativePathNotAllowed: "输出目录必须相对 Vault 根目录，不能以 ./ 或 ../ 开头。",
 	outputEmptyError: "输出路径为空，请调整输出目录设置。",
 	pathConflictError: "路径冲突，{path} 不是目录。",
 	resultViewSource: "查看原始页面",
@@ -216,13 +231,17 @@ const EN: I18nDict = {
 	defaultTagsPlaceholder: "vocab,english",
 	outputDirName: "Output directory",
 	outputDirDesc:
-		"By default it's relative to vault root. If it starts with ./ or ../, it's relative to the current note folder, e.g. ./ai-results.",
+		"A directory relative to the vault root, e.g. AI/StudyNotes. Paths starting with ./ or ../ are not supported.",
+	wordNotesDirName: "Word notes directory",
+	wordNotesDirDesc:
+		"When an AI study note is deleted, links to it in this folder and its subfolders are converted to plain text. Path is relative to the vault root.",
 	lookupCommandName: "Lookup etymology of selected text (Etymonline)",
 	aiCommandName: "Send selected text to AI and create note",
 	debugCommandName: "Show last AI debug snapshot / 查看最近一次 AI 调试信息",
 	lookupMenuName: "Lookup etymology of selected text (Etymonline)",
 	aiMenuName: "Send selected text to AI and create note",
 	organizeWordsCommandName: "Organize AI word notes by GRE semantic groups",
+	cleanMissingAiLinksCommandName: "Clean links to deleted AI study notes",
 	organizeModalTitle: "Confirm word-folder plan",
 	organizeModalDesc: "The LLM planned folders for {count} words. Confirm before moving files.",
 	organizeConfirm: "Move files",
@@ -253,6 +272,9 @@ const EN: I18nDict = {
 	noticeOrganizeMoved: "Step 6/6: Moved {current}/{total} files...",
 	noticeOrganizeFailed: "Word-folder organization failed: {error}",
 	noticeOrganizeSaved: "Organized {count} word files according to the plan.",
+	noticeWordNotesDirRequired: "Set the word notes directory in plugin settings first.",
+	noticeMissingAiLinksCleaned: "Cleaned broken AI links in {count} notes.",
+	noticeMissingAiLinksCleanupFailed: "Failed to clean broken AI links: {error}",
 	organizeInvalidPlan: "The LLM returned an invalid folder plan. No files were moved.",
 	organizeOutOfScope: "The folder plan contains a path outside the output directory. No files were moved.",
 	organizeFileMissing: "The file to organize does not exist: {file}",
@@ -260,6 +282,7 @@ const EN: I18nDict = {
 	outputMissingFileError:
 		"Current file not found. When using ./ or ../ output paths, run the command in a saved note.",
 	outputOutOfVaultError: "The output path is outside your vault. Please adjust output directory.",
+	outputRelativePathNotAllowed: "The output directory must be relative to the vault root and cannot start with ./ or ../.",
 	outputEmptyError: "The output path is empty. Please adjust output directory.",
 	pathConflictError: "Path conflict: {path} is not a folder.",
 	resultViewSource: "View original page",

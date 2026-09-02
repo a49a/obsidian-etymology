@@ -165,5 +165,17 @@ export class EtymologySettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 			);
+
+		new Setting(containerEl)
+			.setName(t(language, "wordNotesDirName"))
+			.setDesc(t(language, "wordNotesDirDesc"))
+			.addText((text) =>
+				text
+					.setValue(this.plugin.settings.wordNotesDir)
+					.onChange(async (value) => {
+						this.plugin.settings.wordNotesDir = value.trim();
+						await this.plugin.saveSettings();
+					})
+			);
 	}
 }

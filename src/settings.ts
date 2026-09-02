@@ -43,6 +43,7 @@ export interface EtymologyPluginSettings {
 	deepseekPromptTemplate: string;
 	organizePromptTemplate: string;
 	deepseekOutputDir: string;
+	wordNotesDir: string;
 	deepseekDefaultTags: string;
 }
 
@@ -58,6 +59,7 @@ export const DEFAULT_SETTINGS: EtymologyPluginSettings = {
 	organizePromptTemplate:
 		"请根据下面的 GRE 单词文件名，按照 GRE 常考意群重新规划目录。只根据单词名判断语义，将相近词归入同一个简洁的英文子目录，例如 Emotions、Conflict、Society、Economics、Science、Politics 或 Evaluation。\n\n文件名：\n{{fileNames}}",
 	deepseekOutputDir: "deepseek-results",
+	wordNotesDir: "",
 	deepseekDefaultTags: "",
 };
 
