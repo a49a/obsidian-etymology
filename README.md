@@ -58,9 +58,10 @@ Open Obsidian Settings -> Community plugins -> Etymology Fetch.
 | Base URL | API endpoint base URL. | provider-specific default |
 | Model | Model name. | provider-specific default |
 | Prompt template | Supports `{{word}}` and `{{selectedText}}`. | built-in vocabulary template |
+| Word notes directory | Required. When an AI study note in the output directory is deleted, wikilinks to it in this folder and its subfolders are converted to plain text; path is relative to the vault root. | empty |
 | Word organization prompt | Prompt used to group filenames into GRE semantic folders. Keep `{{fileNames}}`; it is replaced with the current filenames. | built-in GRE grouping template |
 | Default tags | Written to frontmatter `tags` when creating a new file. | empty |
-| Output directory | By default relative to vault root. If path starts with `./` or `../`, it is relative to the current note folder. | `deepseek-results` |
+| Output directory | Required. Relative to the vault root; `./` and `../` are not supported. | `deepseek-results` |
 
 Prompt example:
 
@@ -71,6 +72,22 @@ Word: {{word}}
 ```
 
 ### Install for local testing
+
+#### When the plugin files are symlinked to `dist/`
+
+If `main.js`, `manifest.json`, and `styles.css` in your vault's plugin directory already symlink to this project's `dist/` directory, run this for normal development testing:
+
+```bash
+npm run dev:dist
+```
+
+It watches the source files, rebuilds `dist/main.js`, and syncs `manifest.json` and `styles.css` after changes. In Obsidian, use **Reload app without saving** or disable and re-enable the plugin to test the change. For a one-time test build, run:
+
+```bash
+npm run build
+```
+
+It also updates the three release files in `dist/`, but does not keep watching for changes.
 
 Quick deploy (build + copy to vault plugin folder in one command):
 
@@ -141,6 +158,12 @@ Generated note includes:
 - frontmatter tags (if configured)
 - AI response
 
+#### Clean up links when deleting AI study notes
+
+Set **Word notes directory** (for example, `GRE/Words`) and **Output directory** (for example, `AI/StudyNotes`); both are paths relative to the vault root. When a Markdown AI study note is deleted from the output directory, the plugin scans the word-notes directory and its subfolders and converts links to that note back to plain word text. For example, `[[AI/StudyNotes/abate|abate]]` becomes `abate`. Only Markdown files are processed.
+
+For notes deleted before this feature was enabled, run **Clean links to deleted AI study notes** from the command palette. It only cleans links to missing notes within the output directory.
+
 #### Organize word notes
 
 Run `Organize AI word notes by GRE semantic groups` to scan Markdown files directly inside the configured output directory. The plugin sends only their filenames to the selected LLM, asks for a strict JSON folder plan based on GRE semantic groups, shows the plan for confirmation, and then moves the files into the planned subfolders.
@@ -171,6 +194,8 @@ npm run dev
 ```bash
 npm run dev:dist
 ```
+
+When the three release files in the vault plugin directory are symlinked to `dist/`, this is the recommended command; reload the plugin in Obsidian after each rebuild.
 
 ### Privacy and network
 

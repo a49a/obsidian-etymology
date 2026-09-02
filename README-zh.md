@@ -51,8 +51,9 @@ Etymology Fetch 是一个 Obsidian 插件，支持：
 | 模型名 | 使用的模型名称。 | 按提供商默认值 |
 | Prompt 模板 | 支持 `{{word}}` 和 `{{selectedText}}`。 | 内置单词学习模板 |
 | 单词目录规划 Prompt | 用于按照 GRE 意群规划文件名目录。请保留 `{{fileNames}}`，插件会将它替换为当前目录中的文件名。 | 内置 GRE 意群规划模板 |
+| 单词笔记目录 | 必填。输出目录中的 AI 学习笔记被删除后，插件会扫描此目录及其子目录，将指向已删除笔记的 `[[链接]]` 还原为普通文字；路径相对 Vault 根目录。 | 空 |
 | 默认 tags | 新建文件时写入 frontmatter `tags`。 | 空 |
-| 输出目录 | 默认相对 Vault 根目录；如果以 `./` 或 `../` 开头，则相对当前笔记所在目录。 | `deepseek-results` |
+| 输出目录 | 必填。相对 Vault 根目录，不支持 `./` 或 `../`。 | `deepseek-results` |
 
 Prompt 示例：
 
@@ -63,6 +64,22 @@ Prompt 示例：
 ```
 
 ### 本地测试安装
+
+#### 已将插件文件软链接到 `dist/`
+
+如果 Vault 的插件目录中 `main.js`、`manifest.json` 和 `styles.css` 已软链接到本项目的 `dist/`，日常开发测试执行：
+
+```bash
+npm run dev:dist
+```
+
+该命令会持续监听源码，修改后自动更新 `dist/main.js`，并同步 `manifest.json`、`styles.css`。回到 Obsidian 后使用“重新加载应用（不重启）”或关闭再启用插件，即可测试最新代码。一次性打包测试可执行：
+
+```bash
+npm run build
+```
+
+此命令同样会将三个发布文件更新到 `dist/`，但不会持续监听文件变化。
 
 一键部署（构建 + 复制到 Vault 插件目录）：
 
@@ -133,6 +150,12 @@ RELEASE_OUTPUT_DIR=/Users/yourname/Desktop/obsidian-release npm run build
 - frontmatter tags（如已配置）
 - AI 返回内容
 
+#### 删除 AI 学习笔记时清理链接
+
+请填写“单词笔记目录”（例如 `GRE/Words`）和“输出目录”（例如 `AI/StudyNotes`），两者都相对 Vault 根目录。当删除输出目录中的 AI 学习笔记时，插件会在单词笔记目录及其子目录中把指向此笔记的链接还原为普通单词文本，例如将 `[[AI/StudyNotes/abate|abate]]` 改为 `abate`。仅处理 Markdown 文件。
+
+如果在启用此功能前已删除过文件，请从命令面板执行“清理已删除 AI 学习笔记的链接”。它只清理输出目录中已经不存在的笔记链接。
+
 #### 整理单词目录
 
 执行 `按 GRE 意群整理 AI 单词目录` 后，插件会扫描配置的输出目录下的 Markdown 文件（只扫描当前目录，不递归扫描子目录），仅将文件名发送给所选 LLM，请它按照 GRE 常见意群返回目录规划。插件会先展示规划结果，确认后才会创建子目录并移动文件。
@@ -165,6 +188,8 @@ npm run dev
 ```bash
 npm run dev:dist
 ```
+
+如果 Vault 插件目录中的三个发布文件已软链接至 `dist/`，推荐使用此命令；修改代码后在 Obsidian 中重新加载插件即可。
 
 ### 隐私与网络
 
