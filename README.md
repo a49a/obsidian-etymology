@@ -58,7 +58,7 @@ Open Obsidian Settings -> Community plugins -> Etymology Fetch.
 | Base URL | API endpoint base URL. | provider-specific default |
 | Model | Model name. | provider-specific default |
 | Prompt template | Supports `{{word}}` and `{{selectedText}}`. | built-in vocabulary template |
-| Word notes directory | Required. When an AI study note in the output directory is deleted, wikilinks to it in this folder and its subfolders are converted to plain text; path is relative to the vault root. | empty |
+| Word notes directory | Required. When a note is deleted, wikilinks to it in this folder and its subfolders are converted to plain text; path is relative to the vault root. | empty |
 | Word organization prompt | Prompt used to group filenames into GRE semantic folders. Keep `{{fileNames}}`; it is replaced with the current filenames. | built-in GRE grouping template |
 | Default tags | Written to frontmatter `tags` when creating a new file. | empty |
 | Output directory | Required. Relative to the vault root; `./` and `../` are not supported. | `deepseek-results` |
@@ -158,11 +158,11 @@ Generated note includes:
 - frontmatter tags (if configured)
 - AI response
 
-#### Clean up links when deleting AI study notes
+#### Clean up broken Wiki links
 
-Set **Word notes directory** (for example, `GRE/Words`) and **Output directory** (for example, `AI/StudyNotes`); both are paths relative to the vault root. When a Markdown AI study note is deleted from the output directory, the plugin scans the word-notes directory and its subfolders and converts links to that note back to plain word text. For example, `[[AI/StudyNotes/abate|abate]]` becomes `abate`. Only Markdown files are processed.
+Set **Word notes directory** (for example, `GRE/Words`); it is relative to the vault root. When a Markdown note is deleted, the plugin scans this directory and its subfolders and converts links to that note back to plain text. For example, `[[AI/StudyNotes/abate|abate]]` becomes `abate`. Only Markdown files are processed.
 
-For notes deleted before this feature was enabled, run **Clean links to deleted AI study notes** from the command palette. It only cleans links to missing notes within the output directory.
+For notes deleted before this feature was enabled, run **Clean broken wikilinks** from the command palette. It cleans every link whose target note is missing.
 
 #### Organize word notes
 

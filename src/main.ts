@@ -694,10 +694,6 @@ export default class EtymologyLookupPlugin extends Plugin {
 		}
 
 		try {
-			const outputDir = this.resolveOutputDir(this.settings.deepseekOutputDir || "deepseek-results");
-			if (!deletedFile.path.startsWith(`${outputDir}/`)) {
-				return;
-			}
 			const updatedFiles = await removeDeletedAiNoteLinks(
 				this.app.vault,
 				deletedFile,
@@ -720,11 +716,10 @@ export default class EtymologyLookupPlugin extends Plugin {
 		}
 
 		try {
-			const outputDir = this.resolveOutputDir(this.settings.deepseekOutputDir || "deepseek-results");
 			const updatedFiles = await removeMissingAiNoteLinks(
 				this.app.vault,
-				wordNotesDir,
-				outputDir
+				this.app.metadataCache,
+				wordNotesDir
 			);
 			new Notice(t(this.getLanguage(), "noticeMissingAiLinksCleaned", {
 				count: String(updatedFiles),

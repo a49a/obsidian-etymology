@@ -1,4 +1,4 @@
-import { normalizePath, TFile, type Vault } from "obsidian";
+import { normalizePath, TFile, type MetadataCache, type Vault } from "obsidian";
 
 const WIKI_LINK_PATTERN = /(!?)\[\[([^\]\r\n]+)\]\]/g;
 
@@ -38,14 +38,12 @@ export async function removeDeletedAiNoteLinks(
 	return updatedFiles;
 }
 
-/** Removes broken links whose targets belong to the AI output directory. */
+/** Removes broken wikilinks whose targets no longer exist in the vault. */
 export async function removeMissingAiNoteLinks(
 	vault: Vault,
-	wordNotesDir: string,
-	aiOutputDir: string
+	metadataCache: MetadataCache,
+	wordNotesDir: string
 ): Promise<number> {
-	const outputPrefix = `${normalizePath(aiOutputDir).replace(/^\/+|\/+$/g, "")}/`;
-
 	const wordFiles = getCandidateWordFiles(vault, wordNotesDir);
 	let updatedFiles = 0;
 
@@ -58,8 +56,7 @@ export async function removeMissingAiNoteLinks(
 				return wholeLink;
 			}
 
-			const destinationPath = normalizePath(target.endsWith(".md") ? target : `${target}.md`);
-			if (!destinationPath.startsWith(outputPrefix) || vault.getAbstractFileByPath(destinationPath)) {
+			if (metadataCache.getFirstLinkpathDest(target, wordFile.path)) {
 				return wholeLink;
 			}
 
