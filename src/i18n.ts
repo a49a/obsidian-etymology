@@ -63,6 +63,7 @@ type I18nDict = {
 	noticeLookupFailed: string;
 	noticeSelectTextForAi: string;
 	noticeMissingApiKey: string;
+	noticeAiQueued: string;
 	noticeAiPreparing: string;
 	noticeAiWaitingForLlm: string;
 	noticeAiResponseReceived: string;
@@ -172,6 +173,7 @@ const ZH: I18nDict = {
 	noticeLookupFailed: "词源查询失败：{error}，请稍后重试。",
 	noticeSelectTextForAi: "请先选中一个单词或短语再执行 AI 生成。",
 	noticeMissingApiKey: "请先在插件设置中填写 API Key。",
+	noticeAiQueued: "已加入队列，当前排在第 {position} 位：{text}",
 	noticeAiPreparing: "步骤 1/5：正在准备发送 \"{text}\" 的请求...",
 	noticeAiWaitingForLlm: "步骤 2/5：正在等待 LLM 返回结果（模型响应较慢时请耐心等待）...",
 	noticeAiResponseReceived: "步骤 3/5：已收到 LLM 返回，正在处理内容...",
@@ -281,6 +283,7 @@ const EN: I18nDict = {
 	noticeLookupFailed: "Etymology lookup failed: {error}. Please try again later.",
 	noticeSelectTextForAi: "Please select a word or phrase before AI generation.",
 	noticeMissingApiKey: "Please set API Key in plugin settings first.",
+	noticeAiQueued: "Queued at position {position}: {text}",
 	noticeAiPreparing: "Step 1/5: Preparing the request for \"{text}\"...",
 	noticeAiWaitingForLlm: "Step 2/5: Waiting for the LLM response. This may take a while...",
 	noticeAiResponseReceived: "Step 3/5: LLM response received. Processing the content...",

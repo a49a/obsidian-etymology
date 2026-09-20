@@ -43,6 +43,15 @@ export class AiNoteService {
 			queueLength: this.queue.length,
 		});
 
+		// Requests that start immediately get the step-by-step progress
+		// notices; only tell the user about requests that have to wait.
+		if (this.isGenerating || this.queue.length > 1) {
+			new Notice(t(this.plugin.getLanguage(), "noticeAiQueued", {
+				position: String(this.queue.length),
+				text: request.selectedText.trim(),
+			}));
+		}
+
 		void this.processNext();
 	}
 
