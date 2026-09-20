@@ -19,6 +19,7 @@ Etymology Fetch 是一个 Obsidian 插件，支持：
 - 选中单词或短语后，从 [Etymonline](https://www.etymonline.com/) 获取词源。
 - 在 Obsidian 弹窗中展示解析结果。
 - 可跳转到 Etymonline 原始页面。
+- 请求超过 30 秒未返回将中止并提示错误。
 
 #### 2）AI 生成学习笔记
 

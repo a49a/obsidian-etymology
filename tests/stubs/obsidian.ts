@@ -9,3 +9,6 @@ export const MarkdownRenderer = {
 export function normalizePath(inputPath: string): string {
 	return inputPath.replace(/\\/g, "/");
 }
+export function requestUrl(): never {
+	throw new Error("requestUrl is not available in tests");
+}

@@ -67,7 +67,7 @@ function trimUrl(url: string): string {
 	return url.replace(/\/+$/, "");
 }
 
-function withTimeout<T>(promise: Promise<T>, timeoutSeconds: number): Promise<T> {
+export function withTimeout<T>(promise: Promise<T>, timeoutSeconds: number): Promise<T> {
 	if (!timeoutSeconds || timeoutSeconds <= 0) {
 		return promise;
 	}

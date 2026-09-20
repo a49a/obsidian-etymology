@@ -19,6 +19,7 @@ Etymology Fetch is an Obsidian plugin that helps you:
 - Select a word or phrase and fetch its etymology from [Etymonline](https://www.etymonline.com/).
 - Show parsed results in an Obsidian modal.
 - Provide a link to the original Etymonline page.
+- Requests are aborted with an error after 30 seconds if the site is unreachable.
 
 #### 2) AI note generation
 

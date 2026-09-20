@@ -1,4 +1,9 @@
 import { requestUrl } from "obsidian";
+import { withTimeout } from "./ai-provider";
+
+// A dictionary page should arrive quickly; abort sooner than the AI timeout
+// so the user gets an error instead of a silent hang.
+const LOOKUP_TIMEOUT_SECONDS = 30;
 
 export interface EtymologyResult {
 	term: string;
@@ -40,12 +45,15 @@ function extractDefinitions(doc: Document): string[] {
 
 export async function fetchEtymology(term: string): Promise<EtymologyResult> {
 	const url = `https://www.etymonline.com/word/${encodeURIComponent(term)}`;
-	const response = await requestUrl({
-		url,
-		headers: {
-			"User-Agent": "Obsidian Etymology Lookup",
-		},
-	});
+	const response = await withTimeout(
+		requestUrl({
+			url,
+			headers: {
+				"User-Agent": "Obsidian Etymology Lookup",
+			},
+		}),
+		LOOKUP_TIMEOUT_SECONDS
+	);
 
 	const parser = new DOMParser();
 	const doc = parser.parseFromString(response.text, "text/html");

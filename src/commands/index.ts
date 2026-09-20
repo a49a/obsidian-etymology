@@ -84,7 +84,9 @@ async function runEtymologyLookup(plugin: EtymologyLookupPlugin, selectedText: s
 		new EtymologyResultModal(plugin.app, result, language).open();
 	} catch (error) {
 		console.error("Etymology lookup failed", error);
-		new Notice(t(language, "noticeLookupFailed"));
+		new Notice(t(language, "noticeLookupFailed", {
+			error: error instanceof Error ? error.message : String(error),
+		}));
 	}
 }
 
