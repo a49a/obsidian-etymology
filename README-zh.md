@@ -22,13 +22,14 @@ Etymology Fetch 是一个 Obsidian 插件，支持：
 
 #### 2）AI 生成学习笔记
 
-- 将选中文本发送到你选择的 AI 提供商 API。
+- 将选中文本发送给你选择的 AI 提供商 API。
 - 在插件设置中自定义 Prompt 模板。
 - 模板支持 `{{word}}` 或 `{{selectedText}}` 变量。
 - 将模型返回内容写入 Vault 内 Markdown 文件。
 - 输出目录不存在时自动创建。
 - 文件名默认使用选中文本（会做文件名安全处理），例如 `etymology.md`。
-- 如果同名文件已存在，会自动追加序号，如 `etymology-1.md`，避免覆盖。
+- 如果同名文件已存在，默认在文末追加新结果（保留历史生成），可在设置中改为覆盖。
+- 请求超过设定超时时间会中止并提示错误，不会一直等待。
 
 #### 3）Anki 卡片导出
 
@@ -64,6 +65,8 @@ Etymology Fetch 是一个 Obsidian 插件，支持：
 | 单词目录规划 Prompt | 用于按照 GRE 意群规划文件名目录。请保留 `{{fileNames}}`，插件会将它替换为当前目录中的文件名。 | 内置 GRE 意群规划模板 |
 | 单词笔记目录 | 必填。输出目录中的 AI 学习笔记被删除后，插件会扫描此目录及其子目录，将指向已删除笔记的 `[[链接]]` 还原为普通文字；路径相对 Vault 根目录。 | 空 |
 | 默认 tags | 新建文件时写入 frontmatter `tags`。 | 空 |
+| 同名笔记处理方式 | 生成的笔记已存在时，选择在文末追加或覆盖原文。 | `追加` |
+| AI 请求超时时间 | 请求超过该秒数未返回将中止并提示错误；`0` 表示不限制。 | `120` |
 | 输出目录 | 必填。相对 Vault 根目录，不支持 `./` 或 `../`。 | `deepseek-results` |
 | Anki 牌组名称 | 导出 Anki 卡片时的目标牌组名，可用 `::` 表示层级（例如 `GRE::词汇`）。留空时使用输出目录名。 | 空 |
 
@@ -128,7 +131,7 @@ RELEASE_OUTPUT_DIR=release-files npm run build
 RELEASE_OUTPUT_DIR=/Users/yourname/Desktop/obsidian-release npm run build
 ```
 
-1. 从 `dist/` 将以下文件复制到 Vault 插件目录：
+2. 从 `dist/` 将以下文件复制到 Vault 插件目录：
 
 ```text
 <Vault>/.obsidian/plugins/etymology-fetch/
@@ -140,7 +143,7 @@ RELEASE_OUTPUT_DIR=/Users/yourname/Desktop/obsidian-release npm run build
 - `manifest.json`
 - `styles.css`
 
-1. 在 Obsidian 的 设置 -> 第三方插件 中启用插件。
+3. 在 Obsidian 的 设置 -> 第三方插件 中启用插件。
 
 ### 使用方式
 

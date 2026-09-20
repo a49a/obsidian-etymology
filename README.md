@@ -28,11 +28,12 @@ Etymology Fetch is an Obsidian plugin that helps you:
 - Save model output as a Markdown file in your vault.
 - Auto-create output folder if it does not exist.
 - File name uses the selected text (sanitized for file safety), for example `etymology.md`.
-- If the file already exists, append a numeric suffix like `etymology-1.md` to avoid overwrite.
+- If the file already exists, the new result is appended to it by default; you can switch to overwriting in settings.
+- Requests are aborted with an error after a configurable timeout instead of waiting forever.
 
 #### 3) GRE word-folder organization
 
-- Scan Markdown word notes directly inside the configured output directory.
+- Scan Markdown word notes directly inside the configured output directory (top level only; existing subfolders are left untouched).
 - Send filenames only to the selected LLM for semantic grouping.
 - Review the returned folder plan before moving files.
 - Validate that every file is assigned exactly once and check target conflicts.
@@ -69,6 +70,8 @@ Open Obsidian Settings -> Community plugins -> Etymology Fetch.
 | Base URL | API endpoint base URL. | provider-specific default |
 | Model | Model name. | provider-specific default |
 | Prompt template | Supports `{{word}}` and `{{selectedText}}`. | built-in vocabulary template |
+| Existing note handling | Append to or overwrite an existing generated note. | `Append` |
+| AI request timeout | Seconds before a request is aborted with an error; `0` disables the timeout. | `120` |
 | Word notes directory | Required. When a note is deleted, wikilinks to it in this folder and its subfolders are converted to plain text; path is relative to the vault root. | empty |
 | Word organization prompt | Prompt used to group filenames into GRE semantic folders. Keep `{{fileNames}}`; it is replaced with the current filenames. | built-in GRE grouping template |
 | Default tags | Written to frontmatter `tags` when creating a new note. | empty |
@@ -136,7 +139,7 @@ RELEASE_OUTPUT_DIR=release-files npm run build
 RELEASE_OUTPUT_DIR=/Users/yourname/Desktop/obsidian-release npm run build
 ```
 
-1. Copy these files from `dist/` into your vault plugin folder:
+2. Copy these files from `dist/` into your vault plugin folder:
 
 ```text
 <Vault>/.obsidian/plugins/etymology-fetch/
@@ -148,7 +151,7 @@ Required files:
 - `manifest.json`
 - `styles.css`
 
-1. In Obsidian, enable it from Settings -> Community plugins.
+3. In Obsidian, enable it from Settings -> Community plugins.
 
 ### Usage
 
@@ -178,7 +181,7 @@ For notes deleted before this feature was enabled, run **Clean broken wikilinks*
 
 #### Organize word notes
 
-Run `Organize AI word notes by GRE semantic groups` to scan Markdown files directly inside the configured output directory. The plugin sends only their filenames to the selected LLM, asks for a strict JSON folder plan based on GRE semantic groups, shows the plan for confirmation, and then moves the files into the planned subfolders.
+Run `Organize AI word notes by GRE semantic groups` to scan Markdown files directly inside the configured output directory (top level only; subfolders created by earlier runs are left untouched). The plugin sends only their filenames to the selected LLM, asks for a strict JSON folder plan based on GRE semantic groups, shows the plan for confirmation, and then moves the files into the planned subfolders.
 
 The organization prompt can be edited in settings. Keep the `{{fileNames}}` placeholder so the current filenames are included. The plugin appends the required JSON response and assignment constraints automatically.
 
