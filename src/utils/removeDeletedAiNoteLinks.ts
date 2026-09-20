@@ -79,11 +79,11 @@ function getCandidateWordFiles(vault: Vault, wordNotesDir: string): TFile[] {
 	return vault.getMarkdownFiles().filter((file) => file.path.startsWith(directoryPrefix));
 }
 
-function getLinkTarget(inner: string): string {
+export function getLinkTarget(inner: string): string {
 	return inner.split("|")[0]?.split("#")[0]?.split("^")[0]?.trim() ?? "";
 }
 
-function getVisibleText(inner: string): string {
+export function getVisibleText(inner: string): string {
 	const alias = inner.split("|")[1]?.trim();
 	if (alias) {
 		return alias;

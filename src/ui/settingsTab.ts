@@ -16,7 +16,7 @@ export class EtymologySettingTab extends PluginSettingTab {
 		containerEl.empty();
 		const language = resolveLanguage(this.plugin.settings.uiLanguage);
 
-		containerEl.createEl("h2", { text: t(language, "settingsTitle") });
+		new Setting(containerEl).setName(t(language, "settingsTitle")).setHeading();
 
 		new Setting(containerEl)
 			.setName(t(language, "languageName"))
@@ -74,7 +74,7 @@ export class EtymologySettingTab extends PluginSettingTab {
 			.setDesc(t(language, "apiKeyDesc"))
 			.addText((text) =>
 				text
-					.setPlaceholder("sk-...")
+					.setPlaceholder("API key")
 					.setValue(this.plugin.settings.deepseekApiKey)
 					.onChange(async (value) => {
 						this.plugin.settings.deepseekApiKey = value.trim();
@@ -110,35 +110,35 @@ export class EtymologySettingTab extends PluginSettingTab {
 					})
 			);
 
-		new Setting(containerEl)
-			.setName(t(language, "promptTemplateName"))
-			.setDesc(t(language, "promptTemplateDesc"))
-			.addTextArea((text) => {
-				text
-					.setPlaceholder(t(language, "promptTemplatePlaceholder"))
-					.setValue(this.plugin.settings.deepseekPromptTemplate)
-					.onChange(async (value) => {
-						this.plugin.settings.deepseekPromptTemplate = value;
-						await this.plugin.saveSettings();
-					});
-				text.inputEl.rows = 8;
-				text.inputEl.style.width = "100%";
-			});
+			new Setting(containerEl)
+				.setName(t(language, "promptTemplateName"))
+				.setDesc(t(language, "promptTemplateDesc"))
+				.addTextArea((text) => {
+					text
+						.setPlaceholder(t(language, "promptTemplatePlaceholder"))
+						.setValue(this.plugin.settings.deepseekPromptTemplate)
+						.onChange(async (value) => {
+							this.plugin.settings.deepseekPromptTemplate = value;
+							await this.plugin.saveSettings();
+						});
+					text.inputEl.rows = 8;
+					text.inputEl.addClass("etymology-full-width-input");
+				});
 
-		new Setting(containerEl)
-			.setName(t(language, "organizePromptName"))
-			.setDesc(t(language, "organizePromptDesc"))
-			.addTextArea((text) => {
-				text
-					.setPlaceholder(t(language, "organizePromptPlaceholder"))
-					.setValue(this.plugin.settings.organizePromptTemplate)
-					.onChange(async (value) => {
-						this.plugin.settings.organizePromptTemplate = value;
-						await this.plugin.saveSettings();
-					});
-				text.inputEl.rows = 10;
-				text.inputEl.style.width = "100%";
-			});
+			new Setting(containerEl)
+				.setName(t(language, "organizePromptName"))
+				.setDesc(t(language, "organizePromptDesc"))
+				.addTextArea((text) => {
+					text
+						.setPlaceholder(t(language, "organizePromptPlaceholder"))
+						.setValue(this.plugin.settings.organizePromptTemplate)
+						.onChange(async (value) => {
+							this.plugin.settings.organizePromptTemplate = value;
+							await this.plugin.saveSettings();
+						});
+					text.inputEl.rows = 10;
+					text.inputEl.addClass("etymology-full-width-input");
+				});
 
 		new Setting(containerEl)
 			.setName(t(language, "defaultTagsName"))
@@ -158,10 +158,39 @@ export class EtymologySettingTab extends PluginSettingTab {
 			.setDesc(t(language, "outputDirDesc"))
 			.addText((text) =>
 				text
-					.setPlaceholder("deepseek-results")
+					.setPlaceholder("AI study notes")
 					.setValue(this.plugin.settings.deepseekOutputDir)
 					.onChange(async (value) => {
 						this.plugin.settings.deepseekOutputDir = value.trim() || "deepseek-results";
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName(t(language, "aiWriteModeName"))
+			.setDesc(t(language, "aiWriteModeDesc"))
+			.addDropdown((dropdown) =>
+				dropdown
+					.addOption("append", t(language, "aiWriteModeAppend"))
+					.addOption("overwrite", t(language, "aiWriteModeOverwrite"))
+					.setValue(this.plugin.settings.aiWriteMode)
+					.onChange(async (value) => {
+						this.plugin.settings.aiWriteMode = value as "append" | "overwrite";
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName(t(language, "aiTimeoutName"))
+			.setDesc(t(language, "aiTimeoutDesc"))
+			.addText((text) =>
+				text
+					.setPlaceholder("120")
+					.setValue(String(this.plugin.settings.aiTimeoutSeconds))
+					.onChange(async (value) => {
+						const parsed = Number.parseInt(value, 10);
+						this.plugin.settings.aiTimeoutSeconds =
+							Number.isFinite(parsed) && parsed >= 0 ? parsed : 120;
 						await this.plugin.saveSettings();
 					})
 			);

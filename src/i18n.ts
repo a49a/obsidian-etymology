@@ -34,6 +34,12 @@ type I18nDict = {
 	defaultTagsName: string;
 	defaultTagsDesc: string;
 	defaultTagsPlaceholder: string;
+	aiWriteModeName: string;
+	aiWriteModeDesc: string;
+	aiWriteModeAppend: string;
+	aiWriteModeOverwrite: string;
+	aiTimeoutName: string;
+	aiTimeoutDesc: string;
 	ankiDeckNameName: string;
 	ankiDeckNameDesc: string;
 	outputDirName: string;
@@ -57,8 +63,6 @@ type I18nDict = {
 	noticeLookupFailed: string;
 	noticeSelectTextForAi: string;
 	noticeMissingApiKey: string;
-	noticeAiAlreadyRunning: string;
-	noticeAiInProgress: string;
 	noticeAiPreparing: string;
 	noticeAiWaitingForLlm: string;
 	noticeAiResponseReceived: string;
@@ -91,7 +95,6 @@ type I18nDict = {
 	organizeOutOfScope: string;
 	organizeFileMissing: string;
 	organizeTargetExists: string;
-	outputMissingFileError: string;
 	outputOutOfVaultError: string;
 	outputRelativePathNotAllowed: string;
 	outputEmptyError: string;
@@ -139,6 +142,12 @@ const ZH: I18nDict = {
 	defaultTagsName: "默认 tags",
 	defaultTagsDesc: "生成新文件时写入 Frontmatter tags。支持逗号或空格分隔，例如 vocab,english。",
 	defaultTagsPlaceholder: "vocab,english",
+	aiWriteModeName: "同名笔记处理方式",
+	aiWriteModeDesc: "生成的笔记已存在时，选择追加到原文之后（保留历史生成），或覆盖原文。",
+	aiWriteModeAppend: "追加（默认）",
+	aiWriteModeOverwrite: "覆盖",
+	aiTimeoutName: "AI 请求超时时间（秒）",
+	aiTimeoutDesc: "超过该时长未返回结果将中止请求并提示错误，避免界面一直等待。设为 0 表示不限制。",
 	ankiDeckNameName: "Anki 牌组名称",
 	ankiDeckNameDesc:
 		"导出 Anki 卡片时的目标牌组名，可用 :: 表示层级（例如 GRE::词汇）。留空时使用输出目录名。",
@@ -165,15 +174,13 @@ const ZH: I18nDict = {
 	noticeLookupFailed: "词源查询失败，请稍后重试。",
 	noticeSelectTextForAi: "请先选中一个单词或短语再执行 AI 生成。",
 	noticeMissingApiKey: "请先在插件设置中填写 API Key。",
-	noticeAiAlreadyRunning: "AI 生成正在进行中，请稍候。",
-	noticeAiInProgress: "正在将 \"{text}\" 发送到 AI...",
 	noticeAiPreparing: "步骤 1/5：正在准备发送 \"{text}\" 的请求...",
 	noticeAiWaitingForLlm: "步骤 2/5：正在等待 LLM 返回结果（模型响应较慢时请耐心等待）...",
 	noticeAiResponseReceived: "步骤 3/5：已收到 LLM 返回，正在处理内容...",
 	noticeAiWritingFile: "步骤 4/5：正在写入 AI 生成文件...",
 	noticeAiUpdatingLink: "步骤 5/5：正在更新笔记链接...",
 	noticeAiSaved: "AI 结果已保存: {path}",
-	noticeAiFailed: "AI 生成失败，请检查 API Key、网络、Base URL 或模型设置。",
+	noticeAiFailed: "AI 生成失败：{error}。请检查 API Key、网络、Base URL 或模型设置。",
 	noticeNoDebugSnapshot: "暂无可查看的 AI 调试记录，请先执行一次 AI 生成。",
 	noticeOrganizeFolderMissing: "输出目录不存在或不是目录：{path}",
 	noticeOrganizeNoFiles: "输出目录中没有可整理的 Markdown 文件。",
@@ -199,8 +206,6 @@ const ZH: I18nDict = {
 	organizeOutOfScope: "目录规划包含输出目录之外的路径，未移动任何文件。",
 	organizeFileMissing: "待整理文件不存在：{file}",
 	organizeTargetExists: "目标文件已存在，未执行移动：{file}",
-	outputMissingFileError:
-		"未找到当前文件。使用 ./ 或 ../ 输出路径时，请在一个已保存的笔记中执行命令。",
 	outputOutOfVaultError: "输出路径超出了 Vault 范围，请调整输出目录设置。",
 	outputRelativePathNotAllowed: "输出目录必须相对 Vault 根目录，不能以 ./ 或 ../ 开头。",
 	outputEmptyError: "输出路径为空，请调整输出目录设置。",
@@ -248,6 +253,12 @@ const EN: I18nDict = {
 	defaultTagsName: "Default tags",
 	defaultTagsDesc: "Written to frontmatter tags when creating a new file. Supports comma or space separators, e.g. vocab,english.",
 	defaultTagsPlaceholder: "vocab,english",
+	aiWriteModeName: "Existing note handling",
+	aiWriteModeDesc: "When a generated note already exists, append the new result to it (keeps history) or overwrite it.",
+	aiWriteModeAppend: "Append (default)",
+	aiWriteModeOverwrite: "Overwrite",
+	aiTimeoutName: "AI request timeout (seconds)",
+	aiTimeoutDesc: "Abort the request with an error after this many seconds instead of waiting forever. Set 0 to disable.",
 	ankiDeckNameName: "Anki deck name",
 	ankiDeckNameDesc:
 		"Target deck for exported Anki cards. Use :: for hierarchy (e.g. GRE::Vocabulary). Defaults to the output directory name.",
@@ -274,15 +285,13 @@ const EN: I18nDict = {
 	noticeLookupFailed: "Etymology lookup failed. Please try again later.",
 	noticeSelectTextForAi: "Please select a word or phrase before AI generation.",
 	noticeMissingApiKey: "Please set API Key in plugin settings first.",
-	noticeAiAlreadyRunning: "AI generation is already in progress. Please wait.",
-	noticeAiInProgress: "Sending \"{text}\" to AI...",
 	noticeAiPreparing: "Step 1/5: Preparing the request for \"{text}\"...",
 	noticeAiWaitingForLlm: "Step 2/5: Waiting for the LLM response. This may take a while...",
 	noticeAiResponseReceived: "Step 3/5: LLM response received. Processing the content...",
 	noticeAiWritingFile: "Step 4/5: Writing the generated AI note...",
 	noticeAiUpdatingLink: "Step 5/5: Updating the note link...",
 	noticeAiSaved: "AI result saved: {path}",
-	noticeAiFailed: "AI generation failed. Check API key, network, Base URL, or model settings.",
+	noticeAiFailed: "AI generation failed: {error}. Check API key, network, Base URL, or model settings.",
 	noticeNoDebugSnapshot: "No AI debug snapshot yet. Run an AI generation first.",
 	noticeOrganizeFolderMissing: "The output directory does not exist or is not a folder: {path}",
 	noticeOrganizeNoFiles: "No Markdown files found in the output directory.",
@@ -308,8 +317,6 @@ const EN: I18nDict = {
 	organizeOutOfScope: "The folder plan contains a path outside the output directory. No files were moved.",
 	organizeFileMissing: "The file to organize does not exist: {file}",
 	organizeTargetExists: "The target file already exists. No files were moved: {file}",
-	outputMissingFileError:
-		"Current file not found. When using ./ or ../ output paths, run the command in a saved note.",
 	outputOutOfVaultError: "The output path is outside your vault. Please adjust output directory.",
 	outputRelativePathNotAllowed: "The output directory must be relative to the vault root and cannot start with ./ or ../.",
 	outputEmptyError: "The output path is empty. Please adjust output directory.",
@@ -329,6 +336,8 @@ const DICTS: Record<ResolvedLanguage, I18nDict> = {
 	zh: ZH,
 	en: EN,
 };
+
+export { DICTS };
 
 export function resolveLanguage(language: UiLanguage): ResolvedLanguage {
 	if (language === "zh" || language === "en") {

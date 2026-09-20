@@ -52,10 +52,45 @@ export interface AIGenerateParams {
 	baseUrl: string;
 	model: string;
 	prompt: string;
+	/** Abort the request with an error after this many seconds; 0 disables the timeout. */
+	timeoutSeconds?: number;
+}
+
+interface RequestOptions {
+	url: string;
+	method: string;
+	headers: Record<string, string>;
+	body: string;
 }
 
 function trimUrl(url: string): string {
 	return url.replace(/\/+$/, "");
+}
+
+function withTimeout<T>(promise: Promise<T>, timeoutSeconds: number): Promise<T> {
+	if (!timeoutSeconds || timeoutSeconds <= 0) {
+		return promise;
+	}
+
+	return new Promise<T>((resolve, reject) => {
+		const timer = setTimeout(() => {
+			reject(new Error(`AI request timed out after ${timeoutSeconds}s`));
+		}, timeoutSeconds * 1000);
+		promise.then(
+			(value) => {
+				clearTimeout(timer);
+				resolve(value);
+			},
+			(error) => {
+				clearTimeout(timer);
+				reject(error instanceof Error ? error : new Error(String(error)));
+			}
+		);
+	});
+}
+
+async function requestWithTimeout(params: AIGenerateParams, request: RequestOptions) {
+	return withTimeout(requestUrl(request), params.timeoutSeconds ?? 0);
 }
 
 async function requestOpenAICompatible(params: AIGenerateParams): Promise<string> {
@@ -66,7 +101,7 @@ async function requestOpenAICompatible(params: AIGenerateParams): Promise<string
 		temperature: 0.7,
 	};
 
-	const response = await requestUrl({
+	const response = await requestWithTimeout(params, {
 		url: endpoint,
 		method: "POST",
 		headers: {
@@ -93,11 +128,11 @@ async function requestAnthropic(params: AIGenerateParams): Promise<string> {
 	const endpoint = trimUrl(params.baseUrl);
 	const body = {
 		model: params.model,
-		max_tokens: 1024,
+		max_tokens: 4096,
 		messages: [{ role: "user", content: params.prompt }],
 	};
 
-	const response = await requestUrl({
+	const response = await requestWithTimeout(params, {
 		url: endpoint,
 		method: "POST",
 		headers: {
@@ -129,18 +164,17 @@ async function requestAnthropic(params: AIGenerateParams): Promise<string> {
 async function requestGemini(params: AIGenerateParams): Promise<string> {
 	const hasGenerateAction = params.baseUrl.includes(":generateContent");
 	const base = trimUrl(params.baseUrl);
-	const endpointBase = hasGenerateAction ? base : `${base}/${params.model}:generateContent`;
-	const separator = endpointBase.includes("?") ? "&" : "?";
-	const endpoint = `${endpointBase}${separator}key=${encodeURIComponent(params.apiKey)}`;
+	const endpoint = hasGenerateAction ? base : `${base}/${params.model}:generateContent`;
 
 	const body = {
 		contents: [{ parts: [{ text: params.prompt }] }],
 	};
 
-	const response = await requestUrl({
+	const response = await requestWithTimeout(params, {
 		url: endpoint,
 		method: "POST",
 		headers: {
+			"x-goog-api-key": params.apiKey,
 			"Content-Type": "application/json",
 		},
 		body: JSON.stringify(body),

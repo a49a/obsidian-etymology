@@ -54,6 +54,11 @@
 	border-radius: 10px;
 	background: var(--background-secondary);
 }
+
+.etymology-full-width-input {
+	width: 100%;
+}
+
 /*
 
 This CSS file will be included with your plugin, and

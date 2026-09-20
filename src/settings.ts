@@ -1,5 +1,6 @@
 export type UiLanguage = "auto" | "zh" | "en";
 export type ModelProvider = "deepseek" | "openai" | "glm" | "anthropic" | "gemini" | "custom";
+export type AiWriteMode = "append" | "overwrite";
 
 export interface ProviderPreset {
 	baseUrl: string;
@@ -46,6 +47,8 @@ export interface EtymologyPluginSettings {
 	wordNotesDir: string;
 	deepseekDefaultTags: string;
 	ankiDeckName: string;
+	aiWriteMode: AiWriteMode;
+	aiTimeoutSeconds: number;
 }
 
 export const DEFAULT_SETTINGS: EtymologyPluginSettings = {
@@ -63,6 +66,8 @@ export const DEFAULT_SETTINGS: EtymologyPluginSettings = {
 	wordNotesDir: "",
 	deepseekDefaultTags: "",
 	ankiDeckName: "",
+	aiWriteMode: "append",
+	aiTimeoutSeconds: 120,
 };
 
 export function getPresetForProvider(provider: ModelProvider): ProviderPreset {

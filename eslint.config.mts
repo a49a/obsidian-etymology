@@ -10,21 +10,31 @@ export default tseslint.config(
 				...globals.browser,
 			},
 			parserOptions: {
-				projectService: {
-					allowDefaultProject: [
-						'eslint.config.js',
-						'manifest.json'
-					]
-				},
+					projectService: {
+						allowDefaultProject: [
+							'eslint.config.js',
+							'vitest.config.ts',
+							'manifest.json'
+						]
+					},
 				tsconfigRootDir: import.meta.dirname,
 				extraFileExtensions: ['.json']
 			},
 		},
 	},
 	...obsidianmd.configs.recommended,
+	{
+		files: ["scripts/**/*.mjs", "*.mjs"],
+		languageOptions: {
+			globals: {
+				...globals.node,
+			},
+		},
+	},
 	globalIgnores([
 		"node_modules",
 		"dist",
+		"release-files",
 		"esbuild.config.mjs",
 		"eslint.config.js",
 		"version-bump.mjs",

@@ -1,10 +1,6 @@
 import { App, ButtonComponent, Modal } from "obsidian";
 import { t, type ResolvedLanguage } from "../i18n";
-
-export interface WordOrganizationAssignment {
-	file: string;
-	folder: string;
-}
+import type { WordOrganizationAssignment } from "../features/organizePlan";
 
 export class WordOrganizationModal extends Modal {
 	private readonly language: ResolvedLanguage;
