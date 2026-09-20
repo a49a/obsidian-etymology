@@ -1,4 +1,5 @@
 import type { Editor, EditorPosition } from "obsidian";
+import { toWikiLinkTarget } from "./paths";
 
 export interface SelectionSnapshot {
 	from: EditorPosition;
@@ -103,12 +104,6 @@ export function wrapSelectionWithWikiLink(
 	const wrapped = `${leadingWhitespace}[[${linkTarget}|${trimmedSelection}]]${trailingWhitespace}`;
 	editor.replaceRange(wrapped, selectionSnapshot.from, selectionSnapshot.to);
 	debugLog("Applied wikilink wrap", { linkedText: trimmedSelection });
-}
-
-function toWikiLinkTarget(outputFilePath: string): string {
-	return outputFilePath.endsWith(".md")
-		? outputFilePath.slice(0, -3)
-		: outputFilePath;
 }
 
 function isSelectionAlreadyInsideWikiLink(

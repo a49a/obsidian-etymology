@@ -101,8 +101,6 @@ type I18nDict = {
 	pathConflictError: string;
 	resultViewSource: string;
 	resultEmpty: string;
-	markdownPromptHeading: string;
-	markdownResultHeading: string;
 	debugModalTitle: string;
 	debugModalMeta: string;
 	debugModalSelectedText: string;
@@ -212,8 +210,6 @@ const ZH: I18nDict = {
 	pathConflictError: "路径冲突，{path} 不是目录。",
 	resultViewSource: "查看原始页面",
 	resultEmpty: "未能解析到词源内容，请查看原始页面。",
-	markdownPromptHeading: "## Prompt",
-	markdownResultHeading: "## AI 返回",
 	debugModalTitle: "最近一次 AI 调试信息",
 	debugModalMeta: "时间 / 提供商 / 模型",
 	debugModalSelectedText: "选中文本",
@@ -323,8 +319,6 @@ const EN: I18nDict = {
 	pathConflictError: "Path conflict: {path} is not a folder.",
 	resultViewSource: "View original page",
 	resultEmpty: "No etymology content was parsed. Please check the original page.",
-	markdownPromptHeading: "## Prompt",
-	markdownResultHeading: "## AI Result",
 	debugModalTitle: "Last AI debug snapshot",
 	debugModalMeta: "Time / Provider / Model",
 	debugModalSelectedText: "Selected text",
