@@ -10,6 +10,7 @@ Etymology Fetch 是一个 Obsidian 插件，支持：
 - 将选中的单词或短语发送给 AI 模型（DeepSeek/OpenAI/GLM/Claude/Gemini/自定义）
 - 将生成结果保存为 Vault 内的 Markdown 文件
 - 使用 LLM 规划 GRE 意群，并将单词笔记整理到子目录
+- 将输出目录中的单词笔记导出为 Anki 可导入的卡片文件（纯本地离线）
 
 ### 功能
 
@@ -29,14 +30,24 @@ Etymology Fetch 是一个 Obsidian 插件，支持：
 - 文件名默认使用选中文本（会做文件名安全处理），例如 `etymology.md`。
 - 如果同名文件已存在，会自动追加序号，如 `etymology-1.md`，避免覆盖。
 
+#### 3）Anki 卡片导出
+
+- 扫描输出目录及其子目录中的 Markdown 单词笔记。
+- 卡片正面为单词（文件名），背面为笔记正文（由 Markdown 渲染为 HTML）。
+- Frontmatter `tags` 变为 Anki 标签；意群子目录映射为 Anki 牌组层级（`牌组::意群`）。
+- 在输出目录中生成带 Anki 导入头的 `anki-cards.txt`（需要 Anki 2.1.55 或更新版本）。
+- 全程本地离线，不发起网络请求。
+
 ### 命令
 
 - `查找选中单词的词源 (Etymonline)`
 - `发送选中文本到 AI 并生成文件`
 - `查看最近一次 AI 调试信息`
 - `按 GRE 意群整理 AI 单词目录`
+- `清理失效 Wiki 链接`
+- `把输出目录笔记导出为 Anki 卡片文件`
 
-以上命令都支持命令面板和编辑器右键菜单。
+以上命令都可以在命令面板中使用；前两个也可在编辑器右键菜单中使用。
 
 ### AI 设置
 
@@ -54,6 +65,7 @@ Etymology Fetch 是一个 Obsidian 插件，支持：
 | 单词笔记目录 | 必填。输出目录中的 AI 学习笔记被删除后，插件会扫描此目录及其子目录，将指向已删除笔记的 `[[链接]]` 还原为普通文字；路径相对 Vault 根目录。 | 空 |
 | 默认 tags | 新建文件时写入 frontmatter `tags`。 | 空 |
 | 输出目录 | 必填。相对 Vault 根目录，不支持 `./` 或 `../`。 | `deepseek-results` |
+| Anki 牌组名称 | 导出 Anki 卡片时的目标牌组名，可用 `::` 表示层级（例如 `GRE::词汇`）。留空时使用输出目录名。 | 空 |
 
 Prompt 示例：
 
@@ -168,6 +180,17 @@ RELEASE_OUTPUT_DIR=/Users/yourname/Desktop/obsidian-release npm run build
 
 整理过程中会显示扫描、准备 Prompt、等待 LLM、解析校验、等待确认和移动文件等阶段进度；移动文件时会显示已完成数量和总数量。
 
+#### 导出 Anki 卡片
+
+执行 `把输出目录笔记导出为 Anki 卡片文件` 后，插件会扫描输出目录及其子目录（包括整理后的意群子目录）中的 Markdown 笔记，把每条笔记转换成一张卡片，并在输出目录中生成 `anki-cards.txt`。
+
+- 卡片正面：单词（不含扩展名的文件名）。
+- 卡片背面：笔记正文（去掉 frontmatter），由 Markdown 渲染为 HTML。
+- Frontmatter tags 变为 Anki 标签；每个意群子目录通过 `::` 映射为子牌组，例如 `GRE::Emotions`。
+- 在 Anki 中选择 **文件 → 导入** 打开该文件即可。文件自带导入头（`#separator:tab`、`#html:true`、标签列、牌组列），Anki 2.1.55 及以上版本会自动按基础（Basic）模板完成导入配置。
+- 重复执行命令会用最新笔记内容覆盖 `anki-cards.txt`。
+- 导出完全在本地完成，不发起任何网络请求。
+
 ### 开发
 
 - 建议 Node.js 18+
@@ -197,6 +220,7 @@ npm run dev:dist
 - AI 生成会将选中文本和渲染后的 Prompt 发送到你配置的模型提供商接口地址。
 - 单词目录整理会将配置输出目录中的文件名发送到你配置的模型提供商接口，不会发送笔记内容。
 - 生成结果仅写入当前 Vault。
+- Anki 导出仅在 Vault 内生成卡片文件，不使用网络。
 
 ### 许可证
 

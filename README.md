@@ -10,6 +10,7 @@ Etymology Fetch is an Obsidian plugin that helps you:
 - send selected text to AI models (DeepSeek/OpenAI/GLM/Claude/Gemini/custom)
 - save the generated result as a Markdown note in your vault
 - organize word notes into GRE semantic-group subfolders using an LLM plan
+- export word notes in the output directory as an Anki-importable card file (offline)
 
 ### Features
 
@@ -37,12 +38,22 @@ Etymology Fetch is an Obsidian plugin that helps you:
 - Validate that every file is assigned exactly once and check target conflicts.
 - Restrict all planning and file moves to the configured output directory.
 
+#### 4) Anki card export
+
+- Scan Markdown word notes in the output directory and its subfolders.
+- Card front is the word (file name); card back is the note body rendered from Markdown to HTML.
+- Frontmatter `tags` become Anki tags; semantic-group subfolders map to Anki deck hierarchy (`Deck::Group`).
+- Write `anki-cards.txt` into the output directory with Anki import headers (requires Anki 2.1.55+).
+- Fully local and offline; no network requests.
+
 ### Commands
 
 - `查找选中单词的词源 (Etymonline)`
 - `发送选中文本到 AI 并生成文件`
 - `查看最近一次 AI 调试信息`
 - `Organize AI word notes by GRE semantic groups`
+- `Clean broken wikilinks`
+- `Export output-directory notes as Anki cards`
 
 The commands are available in Command Palette; the first two are also available in the editor context menu.
 
@@ -60,8 +71,9 @@ Open Obsidian Settings -> Community plugins -> Etymology Fetch.
 | Prompt template | Supports `{{word}}` and `{{selectedText}}`. | built-in vocabulary template |
 | Word notes directory | Required. When a note is deleted, wikilinks to it in this folder and its subfolders are converted to plain text; path is relative to the vault root. | empty |
 | Word organization prompt | Prompt used to group filenames into GRE semantic folders. Keep `{{fileNames}}`; it is replaced with the current filenames. | built-in GRE grouping template |
-| Default tags | Written to frontmatter `tags` when creating a new file. | empty |
+| Default tags | Written to frontmatter `tags` when creating a new note. | empty |
 | Output directory | Required. Relative to the vault root; `./` and `../` are not supported. | `deepseek-results` |
+| Anki deck name | Target deck for exported Anki cards; `::` creates deck hierarchy (e.g. `GRE::Vocabulary`). Defaults to the output directory name. | empty |
 
 Prompt example:
 
@@ -174,6 +186,17 @@ Progress notices identify scanning, prompt preparation, waiting for the LLM, res
 
 The organization operation never reads or moves files outside the configured output directory. Plans containing absolute paths, parent-directory traversal, or other out-of-scope paths are rejected before any file is moved.
 
+#### Export word notes to Anki
+
+Run `Export output-directory notes as Anki cards`. The plugin scans Markdown files in the configured output directory (including the semantic-group subfolders), converts each note into a flashcard, and writes `anki-cards.txt` into the output directory.
+
+- Card front: the word (file name without extension).
+- Card back: the note body (frontmatter removed), rendered from Markdown to HTML.
+- Frontmatter tags become Anki tags; each subfolder becomes a sub-deck via `::`, for example `GRE::Emotions`.
+- In Anki, use **File → Import** and select the exported file. The file carries import headers (`#separator:tab`, `#html:true`, tags and deck columns), so Anki 2.1.55+ pre-configures the import with the Basic notetype.
+- Re-running the command overwrites `anki-cards.txt` with the latest notes.
+- The export is fully local and makes no network requests.
+
 ### Development
 
 - Node.js 18+ recommended
@@ -203,6 +226,7 @@ When the three release files in the vault plugin directory are symlinked to `dis
 - AI generation sends selected text and rendered prompt to your configured provider endpoint.
 - Word organization sends filenames from the configured output directory to your configured provider endpoint; note contents are not sent.
 - Generated output is saved only in your current vault.
+- Anki export only writes a card file inside the vault and does not use the network.
 
 ### License
 
