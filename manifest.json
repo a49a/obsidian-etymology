@@ -3,7 +3,7 @@
     "name": "Etymology Fetch",
     "version": "1.1.0",
     "minAppVersion": "1.5.4",
-    "description": "Automatically look up the etymology of selected words or phrases.",
+    "description": "Look up word etymologies, generate AI vocabulary notes, organize them by semantic groups, and export Anki cards.",
     "author": "LN Wang",
     "authorUrl": "",
     "fundingUrl": "",
