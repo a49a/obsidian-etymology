@@ -15,6 +15,7 @@ export async function removeLinksForDeletedAiNote(
 	try {
 		const updatedFiles = await removeDeletedAiNoteLinks(
 			plugin.app.vault,
+			plugin.app.metadataCache,
 			deletedFile,
 			wordNotesDir
 		);
