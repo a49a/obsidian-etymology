@@ -45,6 +45,7 @@ export interface EtymologyPluginSettings {
 	deepseekOutputDir: string;
 	wordNotesDir: string;
 	deepseekDefaultTags: string;
+	ankiDeckName: string;
 }
 
 export const DEFAULT_SETTINGS: EtymologyPluginSettings = {
@@ -61,6 +62,7 @@ export const DEFAULT_SETTINGS: EtymologyPluginSettings = {
 	deepseekOutputDir: "deepseek-results",
 	wordNotesDir: "",
 	deepseekDefaultTags: "",
+	ankiDeckName: "",
 };
 
 export function getPresetForProvider(provider: ModelProvider): ProviderPreset {

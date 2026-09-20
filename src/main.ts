@@ -10,6 +10,7 @@ import {
     type EditorPosition,
 } from "obsidian";
 import { generateWithAI } from "./deepseek";
+import { exportAnkiCards } from "./anki/ankiExport";
 import { fetchEtymology } from "./etymonline";
 import { resolveLanguage, t } from "./i18n";
 import { buildDeepSeekPrompt, DEFAULT_SETTINGS, EtymologyPluginSettings } from "./settings";
@@ -121,6 +122,12 @@ export default class EtymologyLookupPlugin extends Plugin {
 			id: "clean-missing-ai-note-links",
 			name: t(language, "cleanMissingAiLinksCommandName"),
 			callback: () => void this.cleanMissingAiNoteLinks(),
+		});
+
+		this.addCommand({
+			id: "export-anki-cards",
+			name: t(language, "ankiCommandName"),
+			callback: () => void this.exportAnkiCards(),
 		});
 
         this.registerEvent(
@@ -727,6 +734,53 @@ export default class EtymologyLookupPlugin extends Plugin {
 		} catch (error) {
 			console.error("Cleaning missing AI note links failed", error);
 			new Notice(t(this.getLanguage(), "noticeMissingAiLinksCleanupFailed", {
+				error: error instanceof Error ? error.message : String(error),
+			}));
+		}
+	}
+
+	private async exportAnkiCards(): Promise<void> {
+		let progressNotice: Notice | undefined;
+		const updateProgress = (message: string): void => {
+			progressNotice?.hide();
+			progressNotice = new Notice(message, 0);
+		};
+		const clearProgress = (): void => {
+			progressNotice?.hide();
+			progressNotice = undefined;
+		};
+
+		try {
+			updateProgress(t(this.getLanguage(), "noticeAnkiScanning"));
+			const outputDir = this.resolveOutputDir(this.settings.deepseekOutputDir || "deepseek-results");
+			const deckRoot = this.settings.ankiDeckName.trim() || outputDir.split("/").pop() || "Etymology Fetch";
+			const result = await exportAnkiCards({
+				app: this.app,
+				outputDir,
+				deckRoot,
+				component: this,
+				language: this.getLanguage(),
+				debugLog: (message, details) => this.debugLog(message, details),
+				onProgress: updateProgress,
+			});
+			clearProgress();
+			this.debugLog("Anki export finished", {
+				outputPath: result.outputPath,
+				cardCount: result.cardCount,
+				fileCount: result.fileCount,
+			});
+			new Notice(t(this.getLanguage(), "noticeAnkiSaved", {
+				cards: String(result.cardCount),
+				files: String(result.fileCount),
+				path: result.outputPath,
+			}));
+		} catch (error) {
+			console.error("Anki export failed", error);
+			clearProgress();
+			this.debugLog("Anki export failed", {
+				errorMessage: error instanceof Error ? error.message : String(error),
+			});
+			new Notice(t(this.getLanguage(), "noticeAnkiFailed", {
 				error: error instanceof Error ? error.message : String(error),
 			}));
 		}

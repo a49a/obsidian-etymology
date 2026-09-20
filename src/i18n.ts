@@ -34,6 +34,8 @@ type I18nDict = {
 	defaultTagsName: string;
 	defaultTagsDesc: string;
 	defaultTagsPlaceholder: string;
+	ankiDeckNameName: string;
+	ankiDeckNameDesc: string;
 	outputDirName: string;
 	outputDirDesc: string;
 	wordNotesDirName: string;
@@ -45,6 +47,7 @@ type I18nDict = {
 	aiMenuName: string;
 	organizeWordsCommandName: string;
 	cleanMissingAiLinksCommandName: string;
+	ankiCommandName: string;
 	organizeModalTitle: string;
 	organizeModalDesc: string;
 	organizeConfirm: string;
@@ -78,6 +81,12 @@ type I18nDict = {
 	noticeWordNotesDirRequired: string;
 	noticeMissingAiLinksCleaned: string;
 	noticeMissingAiLinksCleanupFailed: string;
+	noticeAnkiFolderMissing: string;
+	noticeAnkiNoFiles: string;
+	noticeAnkiScanning: string;
+	noticeAnkiConverting: string;
+	noticeAnkiSaved: string;
+	noticeAnkiFailed: string;
 	organizeInvalidPlan: string;
 	organizeOutOfScope: string;
 	organizeFileMissing: string;
@@ -130,6 +139,9 @@ const ZH: I18nDict = {
 	defaultTagsName: "默认 tags",
 	defaultTagsDesc: "生成新文件时写入 Frontmatter tags。支持逗号或空格分隔，例如 vocab,english。",
 	defaultTagsPlaceholder: "vocab,english",
+	ankiDeckNameName: "Anki 牌组名称",
+	ankiDeckNameDesc:
+		"导出 Anki 卡片时的目标牌组名，可用 :: 表示层级（例如 GRE::词汇）。留空时使用输出目录名。",
 	outputDirName: "输出目录",
 	outputDirDesc:
 		"相对 Vault 根目录的目录，例如 AI/StudyNotes。不支持以 ./ 或 ../ 开头的路径。",
@@ -143,6 +155,7 @@ const ZH: I18nDict = {
 	aiMenuName: "发送选中文本到 AI 并生成文件",
 	organizeWordsCommandName: "按 GRE 意群整理 AI 单词目录",
 	cleanMissingAiLinksCommandName: "清理失效 Wiki 链接",
+	ankiCommandName: "把输出目录笔记导出为 Anki 卡片文件",
 	organizeModalTitle: "确认单词目录规划",
 	organizeModalDesc: "LLM 已为 {count} 个单词生成目录规划，请确认后移动文件。",
 	organizeConfirm: "确认移动",
@@ -176,6 +189,12 @@ const ZH: I18nDict = {
 	noticeWordNotesDirRequired: "请先在插件设置中填写单词笔记目录。",
 	noticeMissingAiLinksCleaned: "已清理 {count} 个笔记中的失效 Wiki 链接。",
 	noticeMissingAiLinksCleanupFailed: "清理失效 AI 链接失败：{error}",
+	noticeAnkiFolderMissing: "输出目录不存在或不是目录：{path}",
+	noticeAnkiNoFiles: "输出目录中没有可导出的 Markdown 文件。",
+	noticeAnkiScanning: "正在扫描输出目录...",
+	noticeAnkiConverting: "正在转换 {current}/{total} 个笔记...",
+	noticeAnkiSaved: "已导出 {cards} 张卡片（来自 {files} 个笔记）到 {path}。在 Anki 中选择 文件→导入 打开该文件即可。",
+	noticeAnkiFailed: "Anki 导出失败：{error}",
 	organizeInvalidPlan: "LLM 返回的目录规划无效，未移动任何文件。",
 	organizeOutOfScope: "目录规划包含输出目录之外的路径，未移动任何文件。",
 	organizeFileMissing: "待整理文件不存在：{file}",
@@ -229,6 +248,9 @@ const EN: I18nDict = {
 	defaultTagsName: "Default tags",
 	defaultTagsDesc: "Written to frontmatter tags when creating a new file. Supports comma or space separators, e.g. vocab,english.",
 	defaultTagsPlaceholder: "vocab,english",
+	ankiDeckNameName: "Anki deck name",
+	ankiDeckNameDesc:
+		"Target deck for exported Anki cards. Use :: for hierarchy (e.g. GRE::Vocabulary). Defaults to the output directory name.",
 	outputDirName: "Output directory",
 	outputDirDesc:
 		"A directory relative to the vault root, e.g. AI/StudyNotes. Paths starting with ./ or ../ are not supported.",
@@ -242,6 +264,7 @@ const EN: I18nDict = {
 	aiMenuName: "Send selected text to AI and create note",
 	organizeWordsCommandName: "Organize AI word notes by GRE semantic groups",
 	cleanMissingAiLinksCommandName: "Clean broken wikilinks",
+	ankiCommandName: "Export output-directory notes as Anki cards",
 	organizeModalTitle: "Confirm word-folder plan",
 	organizeModalDesc: "The LLM planned folders for {count} words. Confirm before moving files.",
 	organizeConfirm: "Move files",
@@ -275,6 +298,12 @@ const EN: I18nDict = {
 	noticeWordNotesDirRequired: "Set the word notes directory in plugin settings first.",
 	noticeMissingAiLinksCleaned: "Cleaned broken wikilinks in {count} notes.",
 	noticeMissingAiLinksCleanupFailed: "Failed to clean broken AI links: {error}",
+	noticeAnkiFolderMissing: "The output directory does not exist or is not a folder: {path}",
+	noticeAnkiNoFiles: "No Markdown files to export in the output directory.",
+	noticeAnkiScanning: "Scanning the output directory...",
+	noticeAnkiConverting: "Converting note {current}/{total}...",
+	noticeAnkiSaved: "Exported {cards} cards from {files} notes to {path}. Use File → Import in Anki to open it.",
+	noticeAnkiFailed: "Anki export failed: {error}",
 	organizeInvalidPlan: "The LLM returned an invalid folder plan. No files were moved.",
 	organizeOutOfScope: "The folder plan contains a path outside the output directory. No files were moved.",
 	organizeFileMissing: "The file to organize does not exist: {file}",

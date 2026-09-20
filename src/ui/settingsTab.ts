@@ -167,6 +167,19 @@ export class EtymologySettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
+			.setName(t(language, "ankiDeckNameName"))
+			.setDesc(t(language, "ankiDeckNameDesc"))
+			.addText((text) =>
+				text
+					.setPlaceholder("Vocabulary")
+					.setValue(this.plugin.settings.ankiDeckName)
+					.onChange(async (value) => {
+						this.plugin.settings.ankiDeckName = value.trim();
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
 			.setName(t(language, "wordNotesDirName"))
 			.setDesc(t(language, "wordNotesDirDesc"))
 			.addText((text) =>
